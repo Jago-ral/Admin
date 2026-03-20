@@ -575,3 +575,19 @@ export const redirectPrefix = () => {
   // return routerType() === "HashRouter" ? "/#" : "";
   return '';
 };
+
+export const getLabelColorByValue = (val: number) => {
+  if (val < 35) return '#FF4D4D';
+  if (val < 70) return '#FFC107';
+  return '#32cc1e';
+};
+
+export const EMOTION_POOL = [
+  { icon: '😳', key: 'surprised' },
+  { icon: '🤢', key: 'disgusted' },
+  { icon: '🙁', key: 'sad' },
+  { icon: '😨', key: 'fearful' },
+  { icon: '😆', key: 'happy' },
+  { icon: '😡', key: 'angry' },
+  { icon: '😐', key: 'neutral' },
+] as const;

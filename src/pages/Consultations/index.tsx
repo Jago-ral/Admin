@@ -1,4 +1,5 @@
 import CategoryTree from '@/components/CategoryTree';
+import EffectivenessAnalysis from '@/components/EffectivenessAnalysis';
 import ModelFields from '@/components/ModelFields';
 import { DATETIME_FORMAT, DAY_FORMAT } from '@/consts/dates';
 import useModelFields from '@/hooks/useModelFields';
@@ -355,6 +356,12 @@ const Consultations: React.FC = () => {
         </ProCard.TabPane>
         <ProCard.TabPane key={'fields'} tab={<FormattedMessage id="ModelFields" />}>
           <ModelFields class_type="EscolaLms\Consultations\Models\Consultation" />
+        </ProCard.TabPane>
+        <ProCard.TabPane
+          key={'effectiveness-analysis'}
+          tab={<FormattedMessage id="effectiveness_analysis" />}
+        >
+          <EffectivenessAnalysis class_type="EscolaLms\Consultations\Models\Consultation" />
         </ProCard.TabPane>
       </ProCard>
     </PageContainer>

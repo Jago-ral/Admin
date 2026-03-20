@@ -216,6 +216,13 @@ export default {
   slug: 'Slug',
   name: 'Nazwa',
   ID: 'ID',
+  effectiveness_analysis: 'Analiza skuteczności',
+  averange_attention: 'Średnia atencja',
+  emotions: 'Emocje',
+  rating: 'Ocena',
+  recording_short: 'Nagr.',
+  download_video_btn_tooltip: 'Pobierz nagranie {duration}',
+
   newCategory: 'Utwórz nową kategorię',
   editCategory: 'Edytuj kategorię',
   parent_category: 'Nadrzędna kategoria',
