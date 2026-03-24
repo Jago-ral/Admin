@@ -37,11 +37,7 @@ const AttentionWrapper = styled.div`
   flex-direction: row;
   gap: 6px;
   align-items: center;
-`;
-
-const RangeText = styled.span`
-  font-size: 14px;
-  color: #bfbfbf;
+  justify-content: center;
 `;
 
 const EmojiHeader = styled.span`
@@ -92,7 +88,7 @@ export const EffectivenessAnalysis: React.FC<{
       sorter: true,
       width: 40,
       render: (dom, record) => (
-        <TableLink to={`/other/consultations/${record.id}`}>{dom}</TableLink>
+        <TableLink to={`/other/consultations/effectiveness-analysis/${record.id}`}>{dom}</TableLink>
       ),
     },
     {
@@ -101,7 +97,7 @@ export const EffectivenessAnalysis: React.FC<{
       sorter: true,
       width: 250,
       render: (dom, record) => (
-        <TableLink to={`/other/consultations/${record.id}`}>{dom}</TableLink>
+        <TableLink to={`/other/consultations/effectiveness-analysis/${record.id}`}>{dom}</TableLink>
       ),
     },
     {
@@ -114,19 +110,16 @@ export const EffectivenessAnalysis: React.FC<{
       title: <FormattedMessage id="categories" />,
       dataIndex: 'category_id',
       hideInTable: true,
-      renderFormItem: (item, { type, ...rest }) => <CategoryTree {...rest} />,
+      renderFormItem: ({ type, ...rest }) => <CategoryTree {...rest} />,
     },
     {
       title: <FormattedMessage id="averange_attention" />,
       dataIndex: 'averange_attention',
       hideInSearch: true,
-      width: 150,
+      width: 50,
       render: (_, record) => (
         <AttentionWrapper>
           <ValueTag value={record.average_attention || '87'} suffix="%" />
-          <RangeText>
-            od {record.min_attention || '56%'} do {record.max_attention || '78%'}
-          </RangeText>
         </AttentionWrapper>
       ),
     },
@@ -175,7 +168,6 @@ export const EffectivenessAnalysis: React.FC<{
 
   //TODO: Connect with backend, add correct types
   return (
-    <Fragment>
       <StyledProTable<API.Consultation, API.ConsultationsParams>
         actionRef={actionRef}
         rowKey="id"
@@ -184,7 +176,7 @@ export const EffectivenessAnalysis: React.FC<{
         columnEmptyText="0%"
         toolBarRender={() => [
           <Button key="add" type="primary" icon={<PlusOutlined />} style={{ borderRadius: '6px' }}>
-            <FormattedMessage id="new" defaultMessage="Nowy" />
+            <FormattedMessage id="new" />
           </Button>,
           <ActionIcon
             key="reload"
@@ -222,7 +214,6 @@ export const EffectivenessAnalysis: React.FC<{
         columns={columns}
         pagination={{ pageSize: 10 }}
       />
-    </Fragment>
   );
 };
 

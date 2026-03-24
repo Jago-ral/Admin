@@ -536,6 +536,12 @@
         hideInMenu: true,
       },
       {
+        path: '/other/consultations/effectiveness-analysis/:id',
+        access: 'consultationDetailsPermission',
+        component: './Consultations/components/EffectivenessAnalysisDetails',
+        hideInMenu: true,
+      },
+      {
         name: 'StationaryEvents',
         icon: 'global',
         path: '/other/stationary-events',

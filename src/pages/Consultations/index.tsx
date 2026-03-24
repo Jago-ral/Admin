@@ -1,5 +1,5 @@
 import CategoryTree from '@/components/CategoryTree';
-import EffectivenessAnalysis from '@/components/EffectivenessAnalysis';
+import EffectivenessAnalysis from './components/EffectivenessAnalysis';
 import ModelFields from '@/components/ModelFields';
 import { DATETIME_FORMAT, DAY_FORMAT } from '@/consts/dates';
 import useModelFields from '@/hooks/useModelFields';
