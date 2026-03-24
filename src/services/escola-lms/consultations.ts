@@ -92,3 +92,19 @@ export async function changeTermDate(
     },
   );
 }
+
+/** GET /api/admin/recommender/terms/{modelType} */
+export async function getRecommenderTerms(
+  modelType: string,
+  params?: API.ConsultationsParams & { date_from?: string; date_to?: string },
+  options?: AxiosRequestConfig,
+) {
+  return request<API.DefaultMetaResponse<API.Consultation>>(
+    `/api/admin/recommender/terms/${modelType}`,
+    {
+      method: 'GET',
+      params,
+      ...(options || {}),
+    },
+  );
+}

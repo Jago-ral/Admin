@@ -1,22 +1,14 @@
-import React, { useState, useMemo, Fragment } from 'react';
-import {
-  Breadcrumb,
-  Button,
-  Card,
-  Col,
-  Select,
-  Space,
-  Typography,
-} from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
+import { Breadcrumb, Button, Card, Col, Select, Space, Typography } from 'antd';
+import { Fragment, useMemo, useState } from 'react';
 import {
-  AreaChart,
   Area,
-  XAxis,
-  YAxis,
+  AreaChart,
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
+  XAxis,
+  YAxis,
 } from 'recharts';
 import styled from 'styled-components';
 import { FormattedMessage } from 'umi';
@@ -118,8 +110,13 @@ const ScrollContainer = styled.div`
   background: transparent;
   touch-action: pan-x;
 
-  &::-webkit-scrollbar { height: 8px; }
-  &::-webkit-scrollbar-thumb { background: #e8e8e8; border-radius: 4px; }
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #e8e8e8;
+    border-radius: 4px;
+  }
 `;
 
 const ChartWrapper = styled.div<{ $width: string }>`
@@ -163,25 +160,25 @@ const CustomTooltipWrapper = styled.div`
   border-radius: 10px;
   width: 260px;
   z-index: 1000;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 
   .tooltip-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 6px;
   }
   .percentage-badge {
     padding: 2px 10px;
-    border-radius: 4px;
     font-weight: 700;
+    border-radius: 4px;
   }
   .preview-img {
     width: 100%;
     height: 120px;
     object-fit: cover;
-    border-radius: 6px;
     background: #262626;
+    border-radius: 6px;
   }
 `;
 
@@ -208,7 +205,7 @@ const getColorByValue = (val: number) => {
 const CustomTooltip = ({ active, payload }: any) => {
   if (!active || !payload?.length) return null;
   const data = payload[0].payload;
-  const emotion = EMOTION_POOL.find(e => e.key === data.emotionKey) || EMOTION_POOL[6];
+  const emotion = EMOTION_POOL.find((e) => e.key === data.emotionKey) || EMOTION_POOL[6];
   const valColor = getColorByValue(data.attention);
 
   return (
@@ -217,7 +214,14 @@ const CustomTooltip = ({ active, payload }: any) => {
         <span style={{ fontSize: 16, fontWeight: 600 }}>
           {emotion.icon} <FormattedMessage id={emotion.labelId} />
         </span>
-        <span className="percentage-badge" style={{ color: valColor, background: `${valColor}15`, border: `1px solid ${valColor}40` }}>
+        <span
+          className="percentage-badge"
+          style={{
+            color: valColor,
+            background: `${valColor}15`,
+            border: `1px solid ${valColor}40`,
+          }}
+        >
           {data.attention}%
         </span>
       </div>
@@ -227,7 +231,11 @@ const CustomTooltip = ({ active, payload }: any) => {
       <div style={{ fontSize: 13, color: COLORS.darkText, marginBottom: 12 }}>
         <FormattedMessage id="ai_segment_analysis" />
       </div>
-      <img className="preview-img" src="https://via.placeholder.com/240x120/1a1a1a/ffffff?text=Video+Frame" alt="preview" />
+      <img
+        className="preview-img"
+        src="https://via.placeholder.com/240x120/1a1a1a/ffffff?text=Video+Frame"
+        alt="preview"
+      />
     </CustomTooltipWrapper>
   );
 };
@@ -241,7 +249,8 @@ export const EffectivenessAnalysisDetails = () => {
 
   const data = useMemo(() => {
     const pointsCount = Math.floor(TOTAL_DURATION_SEC / res);
-    const getAttention = (s: number) => [92, 85, 78, 45, 30, 25, 40, 65, 88, 95][Math.floor(s / 15) % 10];
+    const getAttention = (s: number) =>
+      [92, 85, 78, 45, 30, 25, 40, 65, 88, 95][Math.floor(s / 15) % 10];
 
     return Array.from({ length: pointsCount + 1 }, (_, i) => {
       const sec = i * res;
@@ -263,7 +272,7 @@ export const EffectivenessAnalysisDetails = () => {
     <linearGradient id={id} x1="0" y1="0" x2="1" y2="0">
       {data.map((point, index) => (
         <stop
-          key={index}
+          key={point.time}
           offset={`${(index / (data.length - 1)) * 100}%`}
           stopColor={getColorByValue(point.attention)}
           stopOpacity={isArea ? 0.4 : 1}
@@ -276,15 +285,23 @@ export const EffectivenessAnalysisDetails = () => {
     <Fragment>
       <HeaderWrapper>
         <StyledBreadcrumb>
-          <Breadcrumb.Item><FormattedMessage id="other_activities" /></Breadcrumb.Item>
-          <Breadcrumb.Item><FormattedMessage id="consultations" /></Breadcrumb.Item>
-          <Breadcrumb.Item><FormattedMessage id="detailed_analysis" /></Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <FormattedMessage id="other_activities" />
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <FormattedMessage id="consultations" />
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <FormattedMessage id="detailed_analysis" />
+          </Breadcrumb.Item>
         </StyledBreadcrumb>
       </HeaderWrapper>
 
       <PageWrapper>
         <TitleSection>
-          <Title level={3} style={{ margin: 0 }}>Konsultacja Testowa</Title>
+          <Title level={3} style={{ margin: 0 }}>
+            Konsultacja Testowa
+          </Title>
           <Space size="middle">
             <StyledDownloadButton type="primary" icon={<DownloadOutlined />} size="large">
               <FormattedMessage id="download_recording" />
@@ -293,7 +310,8 @@ export const EffectivenessAnalysisDetails = () => {
               <FormattedMessage
                 id="recording_available_until"
                 values={{ time: <ExpiryTime>9h 35m</ExpiryTime> }}
-              />. <FormattedMessage id="recording_will_be_deleted" />
+              />
+              . <FormattedMessage id="recording_will_be_deleted" />
             </ExpiryText>
           </Space>
         </TitleSection>
@@ -313,7 +331,9 @@ export const EffectivenessAnalysisDetails = () => {
             </Space>
 
             <ResolutionPicker align="center">
-              <ResolutionLabel><FormattedMessage id="resolution" />:</ResolutionLabel>
+              <ResolutionLabel>
+                <FormattedMessage id="resolution" />:
+              </ResolutionLabel>
               <Select value={res} onChange={setRes} style={{ width: 100 }} variant="borderless">
                 <Select.Option value={15}>15 s</Select.Option>
                 <Select.Option value={30}>30 s</Select.Option>
@@ -336,13 +356,30 @@ export const EffectivenessAnalysisDetails = () => {
                   <ResponsiveContainer>
                     <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
                       <defs>
-                        {renderDynamicGradient("dynamicFill", true)}
-                        {renderDynamicGradient("dynamicStroke", false)}
+                        {renderDynamicGradient('dynamicFill', true)}
+                        {renderDynamicGradient('dynamicStroke', false)}
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                      <XAxis dataKey="time" axisLine={{ stroke: COLORS.border }} tick={{ fontSize: 12, fill: COLORS.textSecondary }} dy={10} interval={res >= 300 ? 0 : 'preserveStartEnd'} />
-                      <YAxis width={Y_AXIS_WIDTH} domain={[0, 100]} ticks={[0, 50, 100]} tickFormatter={v => `${v}%`} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: COLORS.textSecondary }} />
-                      <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#40a9ff', strokeWidth: 1.5 }} />
+                      <XAxis
+                        dataKey="time"
+                        axisLine={{ stroke: COLORS.border }}
+                        tick={{ fontSize: 12, fill: COLORS.textSecondary }}
+                        dy={10}
+                        interval={res >= 300 ? 0 : 'preserveStartEnd'}
+                      />
+                      <YAxis
+                        width={Y_AXIS_WIDTH}
+                        domain={[0, 100]}
+                        ticks={[0, 50, 100]}
+                        tickFormatter={(v) => `${v}%`}
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 11, fill: COLORS.textSecondary }}
+                      />
+                      <RechartsTooltip
+                        content={<CustomTooltip />}
+                        cursor={{ stroke: '#40a9ff', strokeWidth: 1.5 }}
+                      />
                       <Area
                         type="monotone"
                         dataKey="attention"
@@ -365,7 +402,14 @@ export const EffectivenessAnalysisDetails = () => {
                   <EmotionGridLine $left={Y_AXIS_WIDTH} />
                   <ResponsiveContainer>
                     <AreaChart data={data} margin={{ top: 0, right: 30, left: 0, bottom: 100 }}>
-                      <XAxis dataKey="time" axisLine={{ stroke: COLORS.border }} tickLine={true} tick={{ fontSize: 12, fill: COLORS.textSecondary }} dy={10} interval={res >= 300 ? 0 : 'preserveStartEnd'} />
+                      <XAxis
+                        dataKey="time"
+                        axisLine={{ stroke: COLORS.border }}
+                        tickLine={true}
+                        tick={{ fontSize: 12, fill: COLORS.textSecondary }}
+                        dy={10}
+                        interval={res >= 300 ? 0 : 'preserveStartEnd'}
+                      />
                       <YAxis width={Y_AXIS_WIDTH} axisLine={false} tick={false} tickLine={false} />
                       <RechartsTooltip content={<CustomTooltip />} />
                       <Area
@@ -376,7 +420,9 @@ export const EffectivenessAnalysisDetails = () => {
                         isAnimationActive={false}
                         dot={(props: any) => {
                           const { cx, payload } = props;
-                          const emotion = EMOTION_POOL.find(e => e.key === payload.emotionKey) || EMOTION_POOL[6];
+                          const emotion =
+                            EMOTION_POOL.find((e) => e.key === payload.emotionKey) ||
+                            EMOTION_POOL[6];
                           return (
                             <foreignObject key={cx} x={cx - 15} y={30} width={30} height={40}>
                               <EmotionIconWrapper>{emotion.icon}</EmotionIconWrapper>

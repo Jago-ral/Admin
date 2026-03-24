@@ -1,6 +1,6 @@
 import CategoryTree from '@/components/CategoryTree';
 import { DATETIME_FORMAT } from '@/consts/dates';
-import { consultations } from '@/services/escola-lms/consultations';
+import type { RecommenderParams, RecommenderTerm } from '@/pages/Consultations/consultations';
 import { createTableOrderObject, EMOTION_POOL, getLabelColorByValue } from '@/utils/utils';
 import { Link } from '@@/exports';
 import {
@@ -14,9 +14,27 @@ import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { Button, Tag, Tooltip } from 'antd';
 import { format } from 'date-fns';
-import React, { Fragment, useRef, useState } from 'react';
+import type { ElementType } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, request } from 'umi';
+
+interface ActionIconProps {
+  component: ElementType;
+  onClick?: () => void;
+  className?: string;
+  key?: string | number;
+}
+
+export async function getRecommenderTerms(modelType: string, params?: RecommenderParams) {
+  return request<API.DefaultMetaResponse<RecommenderTerm>>(
+    `/api/admin/recommender/terms/${modelType}`,
+    {
+      method: 'GET',
+      params,
+    },
+  );
+}
 
 const StyledProTable = styled(ProTable)`
   .ant-table-thead > tr > th::before {
@@ -48,172 +66,225 @@ const TableLink = styled(Link)`
   color: #000;
 `;
 
-const ActionIcon = styled(({ component: Component, ...props }) => <Component {...props} />)`
+const ActionIcon = styled(({ component: Component, ...props }: ActionIconProps) => (
+  <Component {...props} />
+))`
   font-size: 16px;
   color: #8c8c8c;
   cursor: ${(props) => (props.onClick ? 'pointer' : 'default')};
 `;
 
-const ValueTag = ({ value, suffix = '' }: { value: any; suffix?: string }) => {
-  const num = parseFloat(value);
-  const color = getLabelColorByValue(num);
-  return (
-    <StyledValueTag $color={color}>
-      {value}
-      {suffix}
-    </StyledValueTag>
-  );
+const formatPercent = (val: string | number) => {
+  const num = typeof val === 'string' ? parseFloat(val) : val;
+  return isNaN(num) ? '0' : Math.round(num * 100).toString();
 };
 
-const createEmotionColumn = (emoji: string, dataKey: string): ProColumns<API.Consultation> => ({
+const ValueTag = React.memo(
+  ({
+    value,
+    suffix = '',
+    isRaw = false,
+  }: {
+    value: string | number;
+    suffix?: string;
+    isRaw?: boolean;
+  }) => {
+    const displayValue = useMemo(() => {
+      if (isRaw) return formatPercent(value);
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+      return isNaN(num) ? '0.00' : num.toFixed(2);
+    }, [value, isRaw]);
+
+    const color = useMemo(() => getLabelColorByValue(parseFloat(displayValue)), [displayValue]);
+
+    return (
+      <StyledValueTag $color={color}>
+        {displayValue}
+        {suffix}
+      </StyledValueTag>
+    );
+  },
+);
+const createEmotionColumn = (emoji: string, dataKey: string): ProColumns<RecommenderTerm> => ({
   title: <EmojiHeader>{emoji}</EmojiHeader>,
-  dataIndex: ['emotions', dataKey],
+  dataIndex: `avg_emotions_${dataKey}` as keyof RecommenderTerm,
   hideInSearch: true,
   align: 'center',
-  width: 30,
-  render: (val) => `${val || 0}`,
+  width: 45,
+  render: (val) => `${formatPercent(val as string)}%`,
 });
 
-export const EffectivenessAnalysis: React.FC<{
-  class_type: string;
-}> = () => {
+export const EffectivenessAnalysis = () => {
   const actionRef = useRef<ActionType>();
   const [loading, setLoading] = useState(false);
 
-  const columns: ProColumns<API.Consultation>[] = [
-    {
-      title: <FormattedMessage id="ID" />,
-      dataIndex: 'id',
-      hideInSearch: true,
-      sorter: true,
-      width: 40,
-      render: (dom, record) => (
-        <TableLink to={`/other/consultations/effectiveness-analysis/${record.id}`}>{dom}</TableLink>
-      ),
-    },
-    {
-      title: <FormattedMessage id="name" />,
-      dataIndex: 'name',
-      sorter: true,
-      width: 250,
-      render: (dom, record) => (
-        <TableLink to={`/other/consultations/effectiveness-analysis/${record.id}`}>{dom}</TableLink>
-      ),
-    },
-    {
-      title: <FormattedMessage id="dateRange" />,
-      dataIndex: 'dateRange',
-      hideInTable: true,
-      valueType: 'dateRange',
-    },
-    {
-      title: <FormattedMessage id="categories" />,
-      dataIndex: 'category_id',
-      hideInTable: true,
-      renderFormItem: ({ type, ...rest }) => <CategoryTree {...rest} />,
-    },
-    {
-      title: <FormattedMessage id="averange_attention" />,
-      dataIndex: 'averange_attention',
-      hideInSearch: true,
-      width: 50,
-      render: (_, record) => (
-        <AttentionWrapper>
-          <ValueTag value={record.average_attention || '87'} suffix="%" />
-        </AttentionWrapper>
-      ),
-    },
-    {
-      title: <FormattedMessage id="emotions" />,
-      dataIndex: 'emotions_label',
-      hideInSearch: true,
-      width: 5,
-      render: () => null,
-    },
-    ...EMOTION_POOL.map((e) => createEmotionColumn(e.icon, e.key)),
-    {
-      title: <FormattedMessage id="rating" />,
-      dataIndex: 'rating',
-      hideInSearch: true,
-      width: 60,
-      render: (_, record) => <ValueTag value={record.rating || '6.75'} />,
-    },
-    {
-      title: <FormattedMessage id="recording_short" />,
-      dataIndex: 'recording_short',
-      hideInSearch: true,
-      width: 60,
-      render: (_, record) => (
-        <Tooltip
-          title={
-            <FormattedMessage
-              id="download_video_btn_tooltip"
-              values={{
-                duration: record.duration ? `${record.duration}` : '',
-              }}
-            />
-          }
-        >
-          <Button
-            type="primary"
-            icon={<DownloadOutlined />}
-            size="middle"
-            style={{ borderRadius: '4px' }}
-          />
-        </Tooltip>
-      ),
-    },
-  ];
+  const columns: ProColumns<RecommenderTerm>[] = useMemo(
+    () => [
+      {
+        title: <FormattedMessage id="ID" />,
+        dataIndex: 'id',
+        hideInSearch: true,
+        sorter: true,
+        width: 40,
+        render: (dom, record) => (
+          <TableLink to={`/other/consultations/effectiveness-analysis/${record.model_id}`}>
+            {dom}
+          </TableLink>
+        ),
+      },
+      {
+        title: <FormattedMessage id="name" />,
+        dataIndex: 'model_name',
+        sorter: true,
+        width: 250,
+        render: (dom, record) => (
+          <TableLink to={`/other/consultations/effectiveness-analysis/${record.model_id}`}>
+            {dom}
+          </TableLink>
+        ),
+      },
+      {
+        title: <FormattedMessage id="dateRange" />,
+        dataIndex: 'dateRange',
+        hideInTable: true,
+        valueType: 'dateRange',
+        fieldProps: {
+          allowEmpty: [true, true],
+        },
+      },
+      {
+        title: <FormattedMessage id="categories" />,
+        dataIndex: 'category_id',
+        hideInTable: true,
+        renderFormItem: ({ type, ...rest }) => <CategoryTree {...rest} />,
+      },
+      {
+        title: <FormattedMessage id="averange_attention" />,
+        dataIndex: 'avg_attention',
+        hideInSearch: true,
+        width: 80,
+        render: (val) => (
+          <AttentionWrapper>
+            <ValueTag value={val as string | number} suffix="%" isRaw={true} />
+          </AttentionWrapper>
+        ),
+      },
+      {
+        title: <FormattedMessage id="emotions" />,
+        dataIndex: 'emotions_label',
+        hideInSearch: true,
+        width: 5,
+        render: () => null,
+      },
+      ...EMOTION_POOL.map((e) => createEmotionColumn(e.icon, e.key)),
+      {
+        title: <FormattedMessage id="rating" />,
+        dataIndex: 'rating',
+        hideInSearch: true,
+        width: 60,
+        render: (_, record) => <ValueTag value={record.rating ?? 0.0} />,
+      },
+      {
+        title: <FormattedMessage id="recording_short" />,
+        dataIndex: 'recording_short',
+        hideInSearch: true,
+        width: 60,
+        render: (_, record) => (
+          <>
+            {record.url && (
+              <Tooltip
+                title={
+                  <FormattedMessage
+                    id="download_video_btn_tooltip"
+                    values={{
+                      duration: record.urlExpirationTimeMillis
+                        ? `${record.urlExpirationTimeMillis}`
+                        : '',
+                    }}
+                  />
+                }
+              >
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  size="middle"
+                  style={{ borderRadius: '4px' }}
+                  onClick={() => window.open(record.url, '_blank')}
+                />
+              </Tooltip>
+            )}
+          </>
+        ),
+      },
+    ],
+    [],
+  );
 
-
-  //TODO: Connect with backend, add correct types
   return (
-      <StyledProTable<API.Consultation, API.ConsultationsParams>
-        actionRef={actionRef}
-        rowKey="id"
-        loading={loading}
-        search={{ layout: 'horizontal', labelWidth: 'auto' }}
-        columnEmptyText="0%"
-        toolBarRender={() => [
-          <Button key="add" type="primary" icon={<PlusOutlined />} style={{ borderRadius: '6px' }}>
-            <FormattedMessage id="new" />
-          </Button>,
-          <ActionIcon
-            key="reload"
-            component={ReloadOutlined}
-            onClick={() => actionRef.current?.reload()}
-          />,
-          <ActionIcon key="sort" component={VerticalAlignMiddleOutlined} />,
-          <ActionIcon key="settings" component={SettingOutlined} />,
-        ]}
-        request={async ({ name, dateRange, category_id, pageSize, current }, sort) => {
-          setLoading(true);
-          const date_from = dateRange?.[0]
-            ? format(new Date(dateRange[0]), DATETIME_FORMAT)
-            : undefined;
-          const date_to = dateRange?.[1]
-            ? format(new Date(dateRange[1]), DATETIME_FORMAT)
-            : undefined;
+    <StyledProTable<any, any>
+      actionRef={actionRef}
+      rowKey="id"
+      loading={loading}
+      search={{
+        layout: 'horizontal',
+        labelWidth: 'auto',
+      }}
+      columnEmptyText="0%"
+      toolBarRender={() => [
+        <Button key="add" type="primary" icon={<PlusOutlined />} style={{ borderRadius: '6px' }}>
+          <FormattedMessage id="new" />
+        </Button>,
+        <ActionIcon
+          key="reload"
+          component={ReloadOutlined}
+          onClick={() => actionRef.current?.reload()}
+        />,
+        <ActionIcon key="sort" component={VerticalAlignMiddleOutlined} />,
+        <ActionIcon key="settings" component={SettingOutlined} />,
+      ]}
+      request={async ({ name, dateRange, category_id, pageSize, current }, sort) => {
+        setLoading(true);
 
-          const response = await consultations({
-            name,
+        const date_from = dateRange?.[0]
+          ? format(new Date(dateRange[0]), DATETIME_FORMAT)
+          : undefined;
+        const date_to = dateRange?.[1]
+          ? format(new Date(dateRange[1]), DATETIME_FORMAT)
+          : undefined;
+
+        try {
+          const response = await getRecommenderTerms('consultation', {
+            name: name || undefined,
             'categories[]': category_id,
             per_page: pageSize,
             page: current,
             date_from,
             date_to,
-            ...createTableOrderObject(sort, 'created_at'),
+            ...createTableOrderObject(sort, 'term'),
           });
+
           setLoading(false);
-          return {
-            data: response.data,
-            total: response.meta.total,
-            success: response.success,
-          };
-        }}
-        columns={columns}
-        pagination={{ pageSize: 10 }}
-      />
+
+          if (response.success) {
+            return {
+              data: response.data,
+              total: response.meta.total,
+              success: true,
+            };
+          }
+
+          return { data: [], total: 0, success: false };
+        } catch (error) {
+          setLoading(false);
+          return { data: [], total: 0, success: false };
+        }
+      }}
+      columns={columns}
+      pagination={{
+        pageSize: 10,
+        showSizeChanger: true,
+      }}
+    />
   );
 };
 
