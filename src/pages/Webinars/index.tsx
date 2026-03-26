@@ -174,7 +174,7 @@ const Webinars: React.FC = () => {
               setGenarateToken(false);
             }
           } catch (error) {
-            console.log(error);
+            console.error(error);
           }
         }}
       />
