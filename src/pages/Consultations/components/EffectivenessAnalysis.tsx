@@ -1,7 +1,7 @@
 import CategoryTree from '@/components/CategoryTree';
 import { DATETIME_FORMAT } from '@/consts/dates';
 import type { RecommenderParams, RecommenderTerm } from '@/pages/Consultations/consultations';
-import { createTableOrderObject, EMOTION_POOL, getLabelColorByValue } from '@/utils/utils';
+import {createTableOrderObject, EMOTION_POOL, formatPercent, getLabelColorByValue} from '@/utils/utils';
 import { Link } from '@@/exports';
 import {
   DownloadOutlined,
@@ -14,8 +14,8 @@ import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { Button, Tag, Tooltip } from 'antd';
 import { format } from 'date-fns';
-import type { ElementType } from 'react';
-import React, { useMemo, useRef, useState } from 'react';
+import type {ElementType} from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { FormattedMessage, request } from 'umi';
 
@@ -26,14 +26,8 @@ interface ActionIconProps {
   key?: string | number;
 }
 
-export async function getRecommenderTerms(modelType: string, params?: RecommenderParams) {
-  return request<API.DefaultMetaResponse<RecommenderTerm>>(
-    `/api/admin/recommender/terms/${modelType}`,
-    {
-      method: 'GET',
-      params,
-    },
-  );
+interface EffectivenessAnalysisProps {
+  modelType?: 'webinar' | 'consultation';
 }
 
 const StyledProTable = styled(ProTable)`
@@ -74,11 +68,6 @@ const ActionIcon = styled(({ component: Component, ...props }: ActionIconProps) 
   cursor: ${(props) => (props.onClick ? 'pointer' : 'default')};
 `;
 
-const formatPercent = (val: string | number) => {
-  const num = typeof val === 'string' ? parseFloat(val) : val;
-  return isNaN(num) ? '0' : Math.round(num * 100).toString();
-};
-
 const ValueTag = React.memo(
   ({
     value,
@@ -105,18 +94,36 @@ const ValueTag = React.memo(
     );
   },
 );
-const createEmotionColumn = (emoji: string, dataKey: string): ProColumns<RecommenderTerm> => ({
-  title: <EmojiHeader>{emoji}</EmojiHeader>,
-  dataIndex: `avg_emotions_${dataKey}` as keyof RecommenderTerm,
-  hideInSearch: true,
-  align: 'center',
-  width: 45,
-  render: (val) => `${formatPercent(val as string)}%`,
-});
 
-export const EffectivenessAnalysis = () => {
+export const EffectivenessAnalysis = ({ modelType = "consultation"}: EffectivenessAnalysisProps) => {
   const actionRef = useRef<ActionType>();
   const [loading, setLoading] = useState(false);
+
+  const getRecommenderTerms = useCallback((params?: RecommenderParams)=>  {
+    return request<API.DefaultMetaResponse<RecommenderTerm>>(
+      `/api/admin/recommender/terms/${modelType}`,
+      {
+        method: 'GET',
+        params,
+      },
+    );
+  },[modelType]);
+
+  const getDetailsPath = useCallback((record: RecommenderTerm) => {
+    if (modelType === 'webinar') {
+      return `/courses/webinars/effectiveness-analysis/${record.model_id}/${record.id}`;
+    }
+    return `/other/consultations/effectiveness-analysis/${record.model_id}/${record.id}`;
+  },[modelType]);
+
+  const createEmotionColumn = (emoji: string, dataKey: string): ProColumns<RecommenderTerm> => ({
+    title: <EmojiHeader>{emoji}</EmojiHeader>,
+    dataIndex: `avg_emotions_${dataKey}` as keyof RecommenderTerm,
+    hideInSearch: true,
+    align: 'center',
+    width: 45,
+    render: (val) => `${formatPercent(val as string)}%`,
+  });
 
   const columns: ProColumns<RecommenderTerm>[] = useMemo(
     () => [
@@ -127,7 +134,7 @@ export const EffectivenessAnalysis = () => {
         sorter: true,
         width: 40,
         render: (dom, record) => (
-          <TableLink to={`/other/consultations/effectiveness-analysis/${record.model_id}`}>
+          <TableLink to={getDetailsPath(record)}>
             {dom}
           </TableLink>
         ),
@@ -138,7 +145,7 @@ export const EffectivenessAnalysis = () => {
         sorter: true,
         width: 250,
         render: (dom, record) => (
-          <TableLink to={`/other/consultations/effectiveness-analysis/${record.model_id}`}>
+          <TableLink to={getDetailsPath(record)}>
             {dom}
           </TableLink>
         ),
@@ -217,11 +224,11 @@ export const EffectivenessAnalysis = () => {
         ),
       },
     ],
-    [],
+    [modelType],
   );
 
   return (
-    <StyledProTable<any, any>
+    <StyledProTable
       actionRef={actionRef}
       rowKey="id"
       loading={loading}
@@ -242,7 +249,7 @@ export const EffectivenessAnalysis = () => {
         <ActionIcon key="sort" component={VerticalAlignMiddleOutlined} />,
         <ActionIcon key="settings" component={SettingOutlined} />,
       ]}
-      request={async ({ name, dateRange, category_id, pageSize, current }, sort) => {
+      request={async ({ dateRange, category_id, pageSize, current, model_name }, sort) => {
         setLoading(true);
 
         const date_from = dateRange?.[0]
@@ -253,8 +260,8 @@ export const EffectivenessAnalysis = () => {
           : undefined;
 
         try {
-          const response = await getRecommenderTerms('consultation', {
-            name: name || undefined,
+          const response = await getRecommenderTerms({
+            name: model_name,
             'categories[]': category_id,
             per_page: pageSize,
             page: current,

@@ -108,3 +108,18 @@ export async function getRecommenderTerms(
     },
   );
 }
+
+export async function getModelAnalytics(
+  modelType: string,
+  modelId: string | number,
+  term: string | number,
+  options?: AxiosRequestConfig,
+) {
+  return request<API.DefaultResponse<any>>(
+    `/api/admin/recommender/analytics/${modelType}/${modelId}/${term}`,
+    {
+      method: 'GET',
+      ...(options || {}),
+    },
+  );
+}

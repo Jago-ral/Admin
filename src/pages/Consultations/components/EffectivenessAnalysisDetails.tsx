@@ -1,6 +1,6 @@
 import { DownloadOutlined } from '@ant-design/icons';
 import { Breadcrumb, Button, Card, Col, Select, Space, Typography } from 'antd';
-import { Fragment, useMemo, useState } from 'react';
+import {Fragment, useMemo, useState} from 'react';
 import {
   Area,
   AreaChart,
@@ -11,26 +11,15 @@ import {
   YAxis,
 } from 'recharts';
 import styled from 'styled-components';
-import { FormattedMessage } from 'umi';
-
+import {FormattedMessage} from 'umi';
+import {ANALYSIS_COLORS, EMOTION_POOL, getLabelColorByValue} from "@/utils/utils";
+import {CustomAnalysisTooltip} from "@/pages/Consultations/components/CustomAnalysisTooltip";
 const { Title, Text } = Typography;
 
-const COLORS = {
-  green: '#52c41a',
-  orange: '#faad14',
-  red: '#f5222d',
-  border: '#f0f0f0',
-  textSecondary: '#8c8c8c',
-  bgLight: '#fbfbfb',
-  white: '#ffffff',
-  darkText: '#434343',
-};
-
-// --- Styled Components ---
 
 const PageWrapper = styled.div`
   padding: 24px;
-  background: ${COLORS.bgLight};
+  background: ${ANALYSIS_COLORS.bgLight};
   min-height: 100vh;
   border-radius: 8px;
 `;
@@ -60,7 +49,7 @@ const ExpiryText = styled(Text)`
 `;
 
 const ExpiryTime = styled.b`
-  color: ${COLORS.darkText};
+  color: ${ANALYSIS_COLORS.darkText};
 `;
 
 const StyledCard = styled(Card)`
@@ -79,10 +68,10 @@ const ControlsRow = styled(Col)`
 `;
 
 const RatingValue = styled.div`
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 800;
-  color: ${COLORS.green};
-  padding: 4px 16px;
+  color: ${ANALYSIS_COLORS.green};
+  padding: 4px 12px;
   border: 1px solid #b7eb8f;
   border-radius: 6px;
   background: #f6ffed;
@@ -93,10 +82,10 @@ const RatingDescription = styled(Text)`
 `;
 
 const ResolutionPicker = styled(Space)`
-  background: ${COLORS.white};
+  background: ${ANALYSIS_COLORS.white};
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid ${COLORS.border};
+  border: 1px solid ${ANALYSIS_COLORS.border};
 `;
 
 const ResolutionLabel = styled(Text)`
@@ -144,7 +133,7 @@ const EmotionGridLine = styled.div<{ $left: number }>`
   left: ${(props) => props.$left}px;
   right: 30px;
   height: 1px;
-  background: ${COLORS.border};
+  background: ${ANALYSIS_COLORS.border};
   z-index: 0;
 `;
 
@@ -152,100 +141,16 @@ const EmotionIconWrapper = styled.div`
   font-size: 26px;
   text-align: center;
 `;
-
-const CustomTooltipWrapper = styled.div`
-  background: white;
-  border: 1px solid ${COLORS.border};
-  padding: 16px;
-  border-radius: 10px;
-  width: 260px;
-  z-index: 1000;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-
-  .tooltip-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
-  }
-  .percentage-badge {
-    padding: 2px 10px;
-    font-weight: 700;
-    border-radius: 4px;
-  }
-  .preview-img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    background: #262626;
-    border-radius: 6px;
-  }
-`;
-
-// --- Utils & Constants ---
-
-export const EMOTION_POOL = [
-  { icon: '😳', key: 'surprised', labelId: 'emotion_surprised' },
-  { icon: '🤢', key: 'disgusted', labelId: 'emotion_disgusted' },
-  { icon: '🙁', key: 'sad', labelId: 'emotion_sad' },
-  { icon: '😨', key: 'fearful', labelId: 'emotion_fearful' },
-  { icon: '😆', key: 'happy', labelId: 'emotion_happy' },
-  { icon: '😡', key: 'angry', labelId: 'emotion_angry' },
-  { icon: '😐', key: 'neutral', labelId: 'emotion_neutral' },
-] as const;
-
-const getColorByValue = (val: number) => {
-  if (val < 35) return COLORS.red;
-  if (val < 70) return COLORS.orange;
-  return COLORS.green;
-};
-
-// --- Child Components ---
-
-const CustomTooltip = ({ active, payload }: any) => {
-  if (!active || !payload?.length) return null;
-  const data = payload[0].payload;
-  const emotion = EMOTION_POOL.find((e) => e.key === data.emotionKey) || EMOTION_POOL[6];
-  const valColor = getColorByValue(data.attention);
-
-  return (
-    <CustomTooltipWrapper>
-      <div className="tooltip-header">
-        <span style={{ fontSize: 16, fontWeight: 600 }}>
-          {emotion.icon} <FormattedMessage id={emotion.labelId} />
-        </span>
-        <span
-          className="percentage-badge"
-          style={{
-            color: valColor,
-            background: `${valColor}15`,
-            border: `1px solid ${valColor}40`,
-          }}
-        >
-          {data.attention}%
-        </span>
-      </div>
-      <div style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 4 }}>
-        <FormattedMessage id="time" />: {data.time}
-      </div>
-      <div style={{ fontSize: 13, color: COLORS.darkText, marginBottom: 12 }}>
-        <FormattedMessage id="ai_segment_analysis" />
-      </div>
-      <img
-        className="preview-img"
-        src="https://via.placeholder.com/240x120/1a1a1a/ffffff?text=Video+Frame"
-        alt="preview"
-      />
-    </CustomTooltipWrapper>
-  );
-};
-
-// --- Main Component ---
-
 export const EffectivenessAnalysisDetails = () => {
   const [res, setRes] = useState(15);
   const Y_AXIS_WIDTH = 45;
   const TOTAL_DURATION_SEC = 1800;
+  const timeOptions = [
+    { value: 15, label: <FormattedMessage id="time.seconds" values={{ value: 15 }} /> },
+    { value: 30, label: <FormattedMessage id="time.seconds" values={{ value: 30 }} /> },
+    { value: 60, label: <FormattedMessage id="time.minutes" values={{ value: 1 }} /> },
+    { value: 300, label: <FormattedMessage id="time.minutes" values={{ value: 5 }} /> },
+  ];
 
   const data = useMemo(() => {
     const pointsCount = Math.floor(TOTAL_DURATION_SEC / res);
@@ -268,13 +173,13 @@ export const EffectivenessAnalysisDetails = () => {
     return `${data.length * baseWidth}px`;
   }, [data.length, res]);
 
-  const renderDynamicGradient = (id: string, isArea: boolean) => (
-    <linearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+  const renderDynamicGradient = (gradientId: string, isArea: boolean) => (
+    <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
       {data.map((point, index) => (
         <stop
           key={point.time}
           offset={`${(index / (data.length - 1)) * 100}%`}
-          stopColor={getColorByValue(point.attention)}
+          stopColor={getLabelColorByValue(point.attention)}
           stopOpacity={isArea ? 0.4 : 1}
         />
       ))}
@@ -297,7 +202,7 @@ export const EffectivenessAnalysisDetails = () => {
         </StyledBreadcrumb>
       </HeaderWrapper>
 
-      <PageWrapper>
+      <PageWrapper style={{boxShadow: "none"}}>
         <TitleSection>
           <Title level={3} style={{ margin: 0 }}>
             Konsultacja Testowa
@@ -316,10 +221,10 @@ export const EffectivenessAnalysisDetails = () => {
           </Space>
         </TitleSection>
 
-        <StyledCard bordered={false}>
+        <StyledCard style={{boxShadow: "none"}} bordered={false}>
           <ControlsRow span={24}>
-            <Space direction="vertical" size={4}>
-              <Text strong style={{ color: COLORS.textSecondary }}>
+            <Space direction="vertical" size={8}>
+              <Text strong style={{ fontSize: 16 }}>
                 <FormattedMessage id="engagement_rating" />
               </Text>
               <Space size="large">
@@ -335,10 +240,11 @@ export const EffectivenessAnalysisDetails = () => {
                 <FormattedMessage id="resolution" />:
               </ResolutionLabel>
               <Select value={res} onChange={setRes} style={{ width: 100 }} variant="borderless">
-                <Select.Option value={15}>15 s</Select.Option>
-                <Select.Option value={30}>30 s</Select.Option>
-                <Select.Option value={60}>1 m</Select.Option>
-                <Select.Option value={300}>5 m</Select.Option>
+                {timeOptions.map(opt => (
+                  <Select.Option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </Select.Option>
+                ))}
               </Select>
             </ResolutionPicker>
           </ControlsRow>
@@ -346,7 +252,6 @@ export const EffectivenessAnalysisDetails = () => {
           <Col span={24}>
             <ScrollContainer>
               <ChartWrapper $width={chartWidth}>
-                {/* Chart 1: Attention */}
                 <ChartHeader $paddingLeft={Y_AXIS_WIDTH}>
                   <Text strong style={{ fontSize: 16 }}>
                     <FormattedMessage id="listeners_engagement" />
@@ -362,8 +267,8 @@ export const EffectivenessAnalysisDetails = () => {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                       <XAxis
                         dataKey="time"
-                        axisLine={{ stroke: COLORS.border }}
-                        tick={{ fontSize: 12, fill: COLORS.textSecondary }}
+                        axisLine={{ stroke: ANALYSIS_COLORS.border }}
+                        tick={{ fontSize: 12, fill: ANALYSIS_COLORS.textSecondary }}
                         dy={10}
                         interval={res >= 300 ? 0 : 'preserveStartEnd'}
                       />
@@ -374,10 +279,10 @@ export const EffectivenessAnalysisDetails = () => {
                         tickFormatter={(v) => `${v}%`}
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 11, fill: COLORS.textSecondary }}
+                        tick={{ fontSize: 11, fill: ANALYSIS_COLORS.textSecondary }}
                       />
                       <RechartsTooltip
-                        content={<CustomTooltip />}
+                        content={<CustomAnalysisTooltip />}
                         cursor={{ stroke: '#40a9ff', strokeWidth: 1.5 }}
                       />
                       <Area
@@ -391,8 +296,6 @@ export const EffectivenessAnalysisDetails = () => {
                     </AreaChart>
                   </ResponsiveContainer>
                 </ChartContainer>
-
-                {/* Chart 2: Emotions */}
                 <ChartHeader $paddingLeft={Y_AXIS_WIDTH} style={{ marginTop: 60 }}>
                   <Text strong style={{ fontSize: 16 }}>
                     <FormattedMessage id="detected_emotions" />
@@ -404,29 +307,31 @@ export const EffectivenessAnalysisDetails = () => {
                     <AreaChart data={data} margin={{ top: 0, right: 30, left: 0, bottom: 100 }}>
                       <XAxis
                         dataKey="time"
-                        axisLine={{ stroke: COLORS.border }}
+                        axisLine={{ stroke: ANALYSIS_COLORS.border }}
                         tickLine={true}
-                        tick={{ fontSize: 12, fill: COLORS.textSecondary }}
+                        tick={{ fontSize: 12, fill: ANALYSIS_COLORS.textSecondary }}
                         dy={10}
                         interval={res >= 300 ? 0 : 'preserveStartEnd'}
                       />
                       <YAxis width={Y_AXIS_WIDTH} axisLine={false} tick={false} tickLine={false} />
-                      <RechartsTooltip content={<CustomTooltip />} />
+                      <RechartsTooltip content={<CustomAnalysisTooltip />} />
                       <Area
                         type="monotone"
                         dataKey="attention"
                         stroke="none"
                         fill="none"
                         isAnimationActive={false}
-                        dot={(props: any) => {
+                        dot={(props) => {
                           const { cx, payload } = props;
                           const emotion =
                             EMOTION_POOL.find((e) => e.key === payload.emotionKey) ||
                             EMOTION_POOL[6];
                           return (
-                            <foreignObject key={cx} x={cx - 15} y={30} width={30} height={40}>
+                            <>
+                            {cx && <foreignObject key={cx} x={cx - 15} y={30} width={30} height={40}>
                               <EmotionIconWrapper>{emotion.icon}</EmotionIconWrapper>
-                            </foreignObject>
+                            </foreignObject>}
+                            </>
                           );
                         }}
                       />

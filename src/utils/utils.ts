@@ -576,18 +576,34 @@ export const redirectPrefix = () => {
   return '';
 };
 
+export const ANALYSIS_COLORS = {
+  green: '#52c41a',
+  orange: '#faad14',
+  red: '#f5222d',
+  border: '#f0f0f0',
+  textSecondary: '#8c8c8c',
+  bgLight: '#fbfbfb',
+  white: '#ffffff',
+  darkText: '#434343',
+};
+
 export const getLabelColorByValue = (val: number) => {
-  if (val < 35) return '#FF4D4D';
-  if (val < 70) return '#FFC107';
-  return '#32cc1e';
+  if (val < 35) return ANALYSIS_COLORS.red;
+  if (val < 70) return ANALYSIS_COLORS.orange;
+  return ANALYSIS_COLORS.green;
 };
 
 export const EMOTION_POOL = [
-  { icon: '😳', key: 'surprised' },
-  { icon: '🤢', key: 'disgusted' },
-  { icon: '🙁', key: 'sad' },
-  { icon: '😨', key: 'fearful' },
-  { icon: '😆', key: 'happy' },
-  { icon: '😡', key: 'angry' },
-  { icon: '😐', key: 'neutral' },
+  { icon: '😳', key: 'surprised', labelId: 'emotion_surprised' },
+  { icon: '🤢', key: 'disgusted', labelId: 'emotion_disgusted' },
+  { icon: '🙁', key: 'sad', labelId: 'emotion_sad' },
+  { icon: '😨', key: 'fearful', labelId: 'emotion_fearful' },
+  { icon: '😆', key: 'happy', labelId: 'emotion_happy' },
+  { icon: '😡', key: 'angry', labelId: 'emotion_angry' },
+  { icon: '😐', key: 'neutral', labelId: 'emotion_neutral' },
 ] as const;
+
+export const formatPercent = (val: string | number) => {
+  const num = typeof val === 'string' ? parseFloat(val) : val;
+  return isNaN(num) ? '0' : Math.round(num * 100).toString();
+}

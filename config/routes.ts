@@ -118,19 +118,30 @@
       },
       {
         path: '/courses/webinars',
+        redirect: '/courses/webinars/list',
+      },
+      {
+        path: '/courses/webinars/list',
         name: 'Webinars',
         icon: 'CustomerServiceOutlined',
         access: 'webinarListPermission',
         component: './Webinars',
       },
       {
-        path: '/courses/webinars/:webinar',
+        path: '/courses/webinars/:tab',
+        name: 'Webinars',
+        access: 'webinarListPermission',
+        component: './Webinars',
+        hideInMenu: true,
+      },
+      {
+        path: '/courses/webinars/webinar/:webinar',
         access: 'webinarDetailsPermission',
         component: './Webinars/form',
         hideInMenu: true,
       },
       {
-        path: '/courses/webinars/:webinar/:tab',
+        path: '/courses/webinars/webinar/:webinar/:tab',
         access: 'webinarDetailsPermission',
         component: './Webinars/form',
         hideInMenu: true,
@@ -536,7 +547,7 @@
         hideInMenu: true,
       },
       {
-        path: '/other/consultations/effectiveness-analysis/:id',
+        path: '/other/consultations/effectiveness-analysis/:modelId/:id',
         access: 'consultationDetailsPermission',
         component: './Consultations/components/EffectivenessAnalysisDetails',
         hideInMenu: true,
