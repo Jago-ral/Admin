@@ -593,15 +593,27 @@ export const getLabelColorByValue = (val: number) => {
   return ANALYSIS_COLORS.green;
 };
 
+export enum EmotionKey {
+  SURPRISED = 'surprised',
+  DISGUSTED = 'disgusted',
+  SAD = 'sad',
+  FEARFUL = 'fearful',
+  HAPPY = 'happy',
+  ANGRY = 'angry',
+  NEUTRAL = 'neutral',
+}
+
 export const EMOTION_POOL = [
-  { icon: '😳', key: 'surprised', labelId: 'emotion_surprised' },
-  { icon: '🤢', key: 'disgusted', labelId: 'emotion_disgusted' },
-  { icon: '🙁', key: 'sad', labelId: 'emotion_sad' },
-  { icon: '😨', key: 'fearful', labelId: 'emotion_fearful' },
-  { icon: '😆', key: 'happy', labelId: 'emotion_happy' },
-  { icon: '😡', key: 'angry', labelId: 'emotion_angry' },
-  { icon: '😐', key: 'neutral', labelId: 'emotion_neutral' },
+  { icon: '😳', key: EmotionKey.SURPRISED, labelId: `emotion_${EmotionKey.SURPRISED}` },
+  { icon: '🤢', key: EmotionKey.DISGUSTED, labelId: `emotion_${EmotionKey.DISGUSTED}` },
+  { icon: '🙁', key: EmotionKey.SAD, labelId: `emotion_${EmotionKey.SAD}` },
+  { icon: '😨', key: EmotionKey.FEARFUL, labelId: `emotion_${EmotionKey.FEARFUL}` },
+  { icon: '😆', key: EmotionKey.HAPPY, labelId: `emotion_${EmotionKey.HAPPY}` },
+  { icon: '😡', key: EmotionKey.ANGRY, labelId: `emotion_${EmotionKey.ANGRY}` },
+  { icon: '😐', key: EmotionKey.NEUTRAL, labelId: `emotion_${EmotionKey.NEUTRAL}` },
 ] as const;
+
+export type EmotionType = (typeof EMOTION_POOL)[number]['key'];
 
 export const formatPercent = (val: string | number) => {
   const num = typeof val === 'string' ? parseFloat(val) : val;

@@ -5,7 +5,7 @@ import type {
   ChartPoint,
 } from '@/pages/Consultations/components/types';
 import { getAnalyticsChartFrames, getModelAnalytics } from '@/services/escola-lms/consultations';
-import { ANALYSIS_COLORS, EMOTION_POOL, formatRating, getLabelColorByValue } from '@/utils/utils';
+import {ANALYSIS_COLORS, EMOTION_POOL, EmotionKey, formatRating, getLabelColorByValue} from '@/utils/utils';
 import { DownloadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Select, Space, Spin, Typography, message } from 'antd';
@@ -207,7 +207,7 @@ const EffectivenessAnalysisDetails = () => {
               attention: Math.round(parseFloat(item.attention) * 100) || 0,
               max_emotion_percentage_val:
                 Math.round(parseFloat(item.max_emotion_percentage) * 100) || 0,
-              emotionKey: item.max_emotion || 'neutral',
+              emotionKey: item.max_emotion || EmotionKey.NEUTRAL,
             };
           });
           setChartData(formatted);
@@ -248,7 +248,7 @@ const EffectivenessAnalysisDetails = () => {
   const renderEmotionDot = useCallback((props: DotProps) => {
     const { cx, payload } = props;
     if (cx === undefined || !payload) return <Fragment />;
-    const emotion = EMOTION_POOL.find((e) => e.key === payload.emotionKey) || EMOTION_POOL[6];
+    const emotion = EMOTION_POOL.find((e) => e.key === payload.emotionKey) || EMOTION_POOL.find((e) => e.key === EmotionKey.NEUTRAL)!;
     return (
       <foreignObject key={`${cx}-${payload.time}`} x={cx - 15} y={30} width={30} height={40}>
         <EmotionIconWrapper title={payload.emotionKey}>{emotion.icon}</EmotionIconWrapper>
