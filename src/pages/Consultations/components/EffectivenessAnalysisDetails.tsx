@@ -1,6 +1,15 @@
+import { CustomAnalysisTooltip } from '@/pages/Consultations/components/CustomAnalysisTooltip';
+import type {
+  AnalysisData,
+  AnalysisMeta,
+  ChartPoint,
+} from '@/pages/Consultations/components/types';
+import { getAnalyticsChartFrames, getModelAnalytics } from '@/services/escola-lms/consultations';
+import { ANALYSIS_COLORS, EMOTION_POOL, formatRating, getLabelColorByValue } from '@/utils/utils';
 import { DownloadOutlined } from '@ant-design/icons';
-import { Breadcrumb, Button, Card, Col, Select, Space, Typography } from 'antd';
-import {Fragment, useMemo, useState} from 'react';
+import { PageContainer } from '@ant-design/pro-components';
+import { Button, Card, Col, Select, Space, Spin, Typography, message } from 'antd';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -11,32 +20,13 @@ import {
   YAxis,
 } from 'recharts';
 import styled from 'styled-components';
-import {FormattedMessage} from 'umi';
-import {ANALYSIS_COLORS, EMOTION_POOL, getLabelColorByValue} from "@/utils/utils";
-import {CustomAnalysisTooltip} from "@/pages/Consultations/components/CustomAnalysisTooltip";
-const { Title, Text } = Typography;
+import { FormattedMessage, useLocation, useParams } from 'umi';
 
+const { Text } = Typography;
 
 const PageWrapper = styled.div`
-  padding: 24px;
-  background: ${ANALYSIS_COLORS.bgLight};
+  padding: 0;
   min-height: 100vh;
-  border-radius: 8px;
-`;
-
-const HeaderWrapper = styled.div`
-  padding: 16px 24px 0;
-`;
-
-const StyledBreadcrumb = styled(Breadcrumb)`
-  margin-bottom: 20px;
-`;
-
-const TitleSection = styled.div`
-  display: flex;
-  gap: 24px;
-  margin-bottom: 32px;
-  align-items: center;
 `;
 
 const StyledDownloadButton = styled(Button)`
@@ -98,7 +88,6 @@ const ScrollContainer = styled.div`
   overflow-y: hidden;
   background: transparent;
   touch-action: pan-x;
-
   &::-webkit-scrollbar {
     height: 8px;
   }
@@ -127,120 +116,213 @@ const ChartContainer = styled.div<{ $height: number }>`
   position: relative;
 `;
 
-const EmotionGridLine = styled.div<{ $left: number }>`
-  position: absolute;
-  top: 55px;
-  left: ${(props) => props.$left}px;
-  right: 30px;
-  height: 1px;
-  background: ${ANALYSIS_COLORS.border};
-  z-index: 0;
-`;
-
 const EmotionIconWrapper = styled.div`
   font-size: 26px;
   text-align: center;
 `;
-export const EffectivenessAnalysisDetails = () => {
-  const [res, setRes] = useState(15);
+
+const SectionTitle = styled(Text)`
+  font-size: 16px;
+`;
+
+interface DotProps {
+  cx?: number;
+  cy?: number;
+  payload?: ChartPoint;
+}
+
+const TIME_OPTIONS = [
+  { value: 15, label: <FormattedMessage id="time.seconds" values={{ value: 15 }} /> },
+  { value: 30, label: <FormattedMessage id="time.seconds" values={{ value: 30 }} /> },
+  { value: 60, label: <FormattedMessage id="time.minutes" values={{ value: 1 }} /> },
+  { value: 300, label: <FormattedMessage id="time.minutes" values={{ value: 5 }} /> },
+];
+
+const EffectivenessAnalysisDetails = () => {
+  const { modelId, id: termId } = useParams<{ modelType: string; modelId: string; id: string }>();
+  const { pathname } = useLocation();
+  const [res, setRes] = useState<number>(15);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [analysisMeta, setAnalysisMeta] = useState<AnalysisMeta | null>(null);
+  const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const Y_AXIS_WIDTH = 45;
-  const TOTAL_DURATION_SEC = 1800;
-  const timeOptions = [
-    { value: 15, label: <FormattedMessage id="time.seconds" values={{ value: 15 }} /> },
-    { value: 30, label: <FormattedMessage id="time.seconds" values={{ value: 30 }} /> },
-    { value: 60, label: <FormattedMessage id="time.minutes" values={{ value: 1 }} /> },
-    { value: 300, label: <FormattedMessage id="time.minutes" values={{ value: 5 }} /> },
-  ];
 
-  const data = useMemo(() => {
-    const pointsCount = Math.floor(TOTAL_DURATION_SEC / res);
-    const getAttention = (s: number) =>
-      [92, 85, 78, 45, 30, 25, 40, 65, 88, 95][Math.floor(s / 15) % 10];
+  const modelType = useMemo(() => {
+    if (pathname.includes('/consultations/')) return 'consultation';
+    if (pathname.includes('/webinars/')) return 'webinar';
+    return '';
+  }, [pathname]);
 
-    return Array.from({ length: pointsCount + 1 }, (_, i) => {
-      const sec = i * res;
-      return {
-        time: `${Math.floor(sec / 60)}:${(sec % 60).toString().padStart(2, '0')}`,
-        attention: getAttention(sec),
-        emotionKey: EMOTION_POOL[Math.floor(sec / 15) % EMOTION_POOL.length].key,
-      };
-    });
-  }, [res]);
-
-  const chartWidth = useMemo(() => {
-    if (res >= 300) return '100%';
-    const baseWidth = res <= 30 ? 85 : 150;
-    return `${data.length * baseWidth}px`;
-  }, [data.length, res]);
-
-  const renderDynamicGradient = (gradientId: string, isArea: boolean) => (
-    <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-      {data.map((point, index) => (
-        <stop
-          key={point.time}
-          offset={`${(index / (data.length - 1)) * 100}%`}
-          stopColor={getLabelColorByValue(point.attention)}
-          stopOpacity={isArea ? 0.4 : 1}
-        />
-      ))}
-    </linearGradient>
+  const breadcrumbItems = useMemo(
+    () => [
+      {
+        title: (
+          <FormattedMessage id={modelType === 'webinar' ? 'menu.Courses' : 'other_activities'} />
+        ),
+      },
+      {
+        title: <FormattedMessage id={modelType === 'webinar' ? 'webinars' : 'consultations'} />,
+        path: modelType === 'webinar' ? '/courses/webinars/list' : '/other/consultations',
+      },
+      {
+        title: analysisMeta?.model_name || <FormattedMessage id="details" />,
+      },
+    ],
+    [modelType, analysisMeta],
   );
 
+  const colWidth = useMemo(() => (res <= 30 ? 85 : 150), [res]);
+
+  useEffect(() => {
+    const fetchMeta = async () => {
+      if (!modelType || !modelId || !termId) return;
+      try {
+        const resMeta = await getModelAnalytics(modelType, modelId, termId);
+        if (resMeta?.success) {
+          setAnalysisMeta(resMeta.data);
+        }
+      } catch {
+        message.error('Error fetching meta data');
+      }
+    };
+    fetchMeta();
+  }, [modelType, modelId, termId]);
+
+  useEffect(() => {
+    const fetchFrames = async () => {
+      if (!analysisMeta?.id) return;
+      setLoading(true);
+      try {
+        const resFrames = await getAnalyticsChartFrames(analysisMeta.id, { interval: res });
+        if (resFrames?.success && resFrames.data) {
+          const firstTs = new Date(resFrames.data[0].window_start).getTime();
+          const formatted: ChartPoint[] = resFrames.data.map((item: AnalysisData) => {
+            const currentTs = new Date(item.window_start).getTime();
+            const second = Math.floor((currentTs - firstTs) / 1000);
+            return {
+              ...item,
+              second,
+              interval: res,
+              time: `${Math.floor(second / 60)}:${(second % 60).toString().padStart(2, '0')}`,
+              attention: Math.round(parseFloat(item.attention) * 100) || 0,
+              max_emotion_percentage_val:
+                Math.round(parseFloat(item.max_emotion_percentage) * 100) || 0,
+              emotionKey: item.max_emotion || 'neutral',
+            };
+          });
+          setChartData(formatted);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFrames();
+  }, [analysisMeta?.id, res]);
+
+  const chartWidth = useMemo(() => {
+    const calculatedWidth = chartData.length * colWidth;
+    return chartData.length > 5 ? `${calculatedWidth}px` : '100%';
+  }, [chartData.length, colWidth]);
+
+  const renderDynamicGradient = useCallback(
+    (gradientId: string, isArea: boolean) => {
+      if (chartData.length === 0) return null;
+      return (
+        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+          {chartData.map((point, index) => (
+            <stop
+              key={`${gradientId}-${point.time}`}
+              offset={`${(index / (chartData.length - 1)) * 100}%`}
+              stopColor={getLabelColorByValue(point.attention)}
+              stopOpacity={isArea ? 0.4 : 1}
+            />
+          ))}
+        </linearGradient>
+      );
+    },
+    [chartData],
+  );
+
+  const renderEmotionDot = useCallback((props: DotProps) => {
+    const { cx, payload } = props;
+    if (cx === undefined || !payload) return <Fragment />;
+    const emotion = EMOTION_POOL.find((e) => e.key === payload.emotionKey) || EMOTION_POOL[6];
+    return (
+      <foreignObject key={`${cx}-${payload.time}`} x={cx - 15} y={30} width={30} height={40}>
+        <EmotionIconWrapper title={payload.emotionKey}>{emotion.icon}</EmotionIconWrapper>
+      </foreignObject>
+    );
+  }, []);
+
+  const formatExpirationTime = useCallback((ms: number | null) => {
+    if (!ms || ms <= 0) return '0s';
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const pad = (num: number) => num.toString().padStart(2, '0');
+    return hours > 0
+      ? `${hours}h ${pad(minutes)}m ${pad(seconds)}s`
+      : `${minutes}m ${pad(seconds)}s`;
+  }, []);
+
   return (
-    <Fragment>
-      <HeaderWrapper>
-        <StyledBreadcrumb>
-          <Breadcrumb.Item>
-            <FormattedMessage id="other_activities" />
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            <FormattedMessage id="consultations" />
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            <FormattedMessage id="detailed_analysis" />
-          </Breadcrumb.Item>
-        </StyledBreadcrumb>
-      </HeaderWrapper>
-
-      <PageWrapper style={{boxShadow: "none"}}>
-        <TitleSection>
-          <Title level={3} style={{ margin: 0 }}>
-            Konsultacja Testowa
-          </Title>
-          <Space size="middle">
-            <StyledDownloadButton type="primary" icon={<DownloadOutlined />} size="large">
-              <FormattedMessage id="download_recording" />
-            </StyledDownloadButton>
-            <ExpiryText type="secondary">
-              <FormattedMessage
-                id="recording_available_until"
-                values={{ time: <ExpiryTime>9h 35m</ExpiryTime> }}
-              />
-              . <FormattedMessage id="recording_will_be_deleted" />
-            </ExpiryText>
-          </Space>
-        </TitleSection>
-
-        <StyledCard style={{boxShadow: "none"}} bordered={false}>
+    <PageContainer
+      header={{
+        breadcrumb: { items: breadcrumbItems },
+        title: analysisMeta?.model_name,
+        extra: [
+          analysisMeta?.url && (
+            <Space key="download-section" size="middle">
+              <StyledDownloadButton
+                type="primary"
+                icon={<DownloadOutlined />}
+                size="large"
+                onClick={() => analysisMeta?.url && window.open(analysisMeta?.url, '_blank')}
+              >
+                <FormattedMessage id="download_recording" />
+              </StyledDownloadButton>
+              {analysisMeta.url_expiration_time_millis && (
+                <ExpiryText type="secondary">
+                  <FormattedMessage
+                    id="recording_available_until"
+                    values={{
+                      time: (
+                        <ExpiryTime>
+                          {formatExpirationTime(analysisMeta.url_expiration_time_millis)}
+                        </ExpiryTime>
+                      ),
+                    }}
+                  />
+                </ExpiryText>
+              )}
+            </Space>
+          ),
+        ],
+      }}
+    >
+      <PageWrapper>
+        <StyledCard bordered={false}>
           <ControlsRow span={24}>
             <Space direction="vertical" size={8}>
-              <Text strong style={{ fontSize: 16 }}>
+              <SectionTitle strong>
                 <FormattedMessage id="engagement_rating" />
-              </Text>
+              </SectionTitle>
               <Space size="large">
-                <RatingValue>6.75</RatingValue>
+                <RatingValue>{formatRating(analysisMeta?.rating || 0)}</RatingValue>
                 <RatingDescription type="secondary">
                   <FormattedMessage id="ai_analysis_average" />
                 </RatingDescription>
               </Space>
             </Space>
-
             <ResolutionPicker align="center">
               <ResolutionLabel>
                 <FormattedMessage id="resolution" />:
               </ResolutionLabel>
               <Select value={res} onChange={setRes} style={{ width: 100 }} variant="borderless">
-                {timeOptions.map(opt => (
+                {TIME_OPTIONS.map((opt) => (
                   <Select.Option key={opt.value} value={opt.value}>
                     {opt.label}
                   </Select.Option>
@@ -250,100 +332,102 @@ export const EffectivenessAnalysisDetails = () => {
           </ControlsRow>
 
           <Col span={24}>
-            <ScrollContainer>
-              <ChartWrapper $width={chartWidth}>
-                <ChartHeader $paddingLeft={Y_AXIS_WIDTH}>
-                  <Text strong style={{ fontSize: 16 }}>
-                    <FormattedMessage id="listeners_engagement" />
-                  </Text>
-                </ChartHeader>
-                <ChartContainer $height={380}>
-                  <ResponsiveContainer>
-                    <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-                      <defs>
-                        {renderDynamicGradient('dynamicFill', true)}
-                        {renderDynamicGradient('dynamicStroke', false)}
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                      <XAxis
-                        dataKey="time"
-                        axisLine={{ stroke: ANALYSIS_COLORS.border }}
-                        tick={{ fontSize: 12, fill: ANALYSIS_COLORS.textSecondary }}
-                        dy={10}
-                        interval={res >= 300 ? 0 : 'preserveStartEnd'}
-                      />
-                      <YAxis
-                        width={Y_AXIS_WIDTH}
-                        domain={[0, 100]}
-                        ticks={[0, 50, 100]}
-                        tickFormatter={(v) => `${v}%`}
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 11, fill: ANALYSIS_COLORS.textSecondary }}
-                      />
-                      <RechartsTooltip
-                        content={<CustomAnalysisTooltip />}
-                        cursor={{ stroke: '#40a9ff', strokeWidth: 1.5 }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="attention"
-                        stroke="url(#dynamicStroke)"
-                        strokeWidth={3}
-                        fill="url(#dynamicFill)"
-                        isAnimationActive={false}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-                <ChartHeader $paddingLeft={Y_AXIS_WIDTH} style={{ marginTop: 60 }}>
-                  <Text strong style={{ fontSize: 16 }}>
-                    <FormattedMessage id="detected_emotions" />
-                  </Text>
-                </ChartHeader>
-                <ChartContainer $height={250}>
-                  <EmotionGridLine $left={Y_AXIS_WIDTH} />
-                  <ResponsiveContainer>
-                    <AreaChart data={data} margin={{ top: 0, right: 30, left: 0, bottom: 100 }}>
-                      <XAxis
-                        dataKey="time"
-                        axisLine={{ stroke: ANALYSIS_COLORS.border }}
-                        tickLine={true}
-                        tick={{ fontSize: 12, fill: ANALYSIS_COLORS.textSecondary }}
-                        dy={10}
-                        interval={res >= 300 ? 0 : 'preserveStartEnd'}
-                      />
-                      <YAxis width={Y_AXIS_WIDTH} axisLine={false} tick={false} tickLine={false} />
-                      <RechartsTooltip content={<CustomAnalysisTooltip />} />
-                      <Area
-                        type="monotone"
-                        dataKey="attention"
-                        stroke="none"
-                        fill="none"
-                        isAnimationActive={false}
-                        dot={(props) => {
-                          const { cx, payload } = props;
-                          const emotion =
-                            EMOTION_POOL.find((e) => e.key === payload.emotionKey) ||
-                            EMOTION_POOL[6];
-                          return (
-                            <>
-                            {cx && <foreignObject key={cx} x={cx - 15} y={30} width={30} height={40}>
-                              <EmotionIconWrapper>{emotion.icon}</EmotionIconWrapper>
-                            </foreignObject>}
-                            </>
-                          );
-                        }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </ChartWrapper>
-            </ScrollContainer>
+            <Spin spinning={loading}>
+              <ScrollContainer>
+                <ChartWrapper $width={chartWidth}>
+                  <ChartHeader $paddingLeft={Y_AXIS_WIDTH}>
+                    <SectionTitle strong>
+                      <FormattedMessage id="listeners_engagement" />
+                    </SectionTitle>
+                  </ChartHeader>
+                  <ChartContainer $height={380}>
+                    <ResponsiveContainer>
+                      <AreaChart
+                        data={chartData}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
+                      >
+                        <defs>
+                          {renderDynamicGradient('dynamicFill', true)}
+                          {renderDynamicGradient('dynamicStroke', false)}
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="time"
+                          axisLine={{ stroke: ANALYSIS_COLORS.border }}
+                          tick={{ fontSize: 12 }}
+                          dy={10}
+                          interval={res >= 300 ? 0 : 'preserveStartEnd'}
+                        />
+                        <YAxis
+                          width={Y_AXIS_WIDTH}
+                          domain={[0, 100]}
+                          ticks={[0, 50, 100]}
+                          tickFormatter={(v: number) => `${v}%`}
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                        />
+                        <RechartsTooltip
+                          content={<CustomAnalysisTooltip />}
+                          cursor={{ stroke: '#40a9ff', strokeWidth: 1.5 }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="attention"
+                          stroke="url(#dynamicStroke)"
+                          strokeWidth={3}
+                          fill="url(#dynamicFill)"
+                          isAnimationActive={false}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+
+                  <ChartHeader $paddingLeft={Y_AXIS_WIDTH} style={{ marginTop: 60 }}>
+                    <SectionTitle strong>
+                      <FormattedMessage id="detected_emotions" />
+                    </SectionTitle>
+                  </ChartHeader>
+                  <ChartContainer $height={250}>
+                    <ResponsiveContainer>
+                      <AreaChart
+                        data={chartData}
+                        margin={{ top: 0, right: 30, left: 0, bottom: 100 }}
+                      >
+                        <XAxis
+                          dataKey="time"
+                          axisLine={{ stroke: ANALYSIS_COLORS.border }}
+                          tickLine={false}
+                          tick={{ fontSize: 12 }}
+                          dy={10}
+                          interval={res >= 300 ? 0 : 'preserveStartEnd'}
+                        />
+                        <YAxis
+                          width={Y_AXIS_WIDTH}
+                          axisLine={false}
+                          tick={false}
+                          tickLine={false}
+                          domain={[0, 100]}
+                        />
+                        <RechartsTooltip content={<CustomAnalysisTooltip />} />
+                        <Area
+                          type="monotone"
+                          dataKey="max_emotion_percentage_val"
+                          stroke="none"
+                          fill="none"
+                          isAnimationActive={false}
+                          dot={renderEmotionDot}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </ChartWrapper>
+              </ScrollContainer>
+            </Spin>
           </Col>
         </StyledCard>
       </PageWrapper>
-    </Fragment>
+    </PageContainer>
   );
 };
 

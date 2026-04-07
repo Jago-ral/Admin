@@ -123,3 +123,18 @@ export async function getModelAnalytics(
     },
   );
 }
+
+export async function getAnalyticsChartFrames(
+  id: number,
+  params: { interval: number },
+  options?: AxiosRequestConfig,
+) {
+  return request<API.DefaultResponse<any[]>>(
+    `/api/admin/recommender/analytics/aggregated-frames/${id}`,
+    {
+      method: 'GET',
+      params,
+      ...(options || {}),
+    },
+  );
+}

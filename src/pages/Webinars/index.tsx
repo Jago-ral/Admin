@@ -1,10 +1,11 @@
+import ProCard from '@ant-design/pro-card';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import ProCard from '@ant-design/pro-card';
 import React, { useCallback, useRef, useState } from 'react';
-import { FormattedMessage, Link, useIntl, history, useParams } from 'umi';
+import { FormattedMessage, Link, history, useIntl, useParams } from 'umi';
 
+import { useShowNotification } from '@/hooks/useMessage';
 import { deleteWebinar, generateYoutubeToken, webinars } from '@/services/escola-lms/webinars';
 import { roundTo } from '@/utils/utils';
 import {
@@ -15,9 +16,8 @@ import {
   PlusOutlined,
 } from '@ant-design/icons';
 import { Button, Popconfirm, Tag, Typography, message } from 'antd';
-import { useShowNotification } from '@/hooks/useMessage';
-import TokenForm from './components/TokenForm';
 import EffectivenessAnalysis from '../Consultations/components/EffectivenessAnalysis';
+import TokenForm from './components/TokenForm';
 
 export const TableColumns: ProColumns<API.Webinar>[] = [
   {
@@ -35,21 +35,44 @@ export const TableColumns: ProColumns<API.Webinar>[] = [
     title: <FormattedMessage id="status" />,
     dataIndex: 'status',
     valueEnum: {
-      draft: { text: <Tag><FormattedMessage id="draft" /></Tag> },
-      archived: { text: <Tag color="error"><FormattedMessage id="archived" /></Tag> },
-      published: { text: <Tag color="success"><FormattedMessage id="published" /></Tag> },
+      draft: {
+        text: (
+          <Tag>
+            <FormattedMessage id="draft" />
+          </Tag>
+        ),
+      },
+      archived: {
+        text: (
+          <Tag color="error">
+            <FormattedMessage id="archived" />
+          </Tag>
+        ),
+      },
+      published: {
+        text: (
+          <Tag color="success">
+            <FormattedMessage id="published" />
+          </Tag>
+        ),
+      },
     },
   },
   {
     title: <FormattedMessage id="product" />,
     dataIndex: 'product',
-    render: (_, record) => record.product?.price ? (
-      <Link to={`/courses/webinars/webinar/${record.id}/product`}>
-        <Button type="primary" icon={<DollarOutlined />}>
-          {roundTo(record.product.price, 2, 100)}
-        </Button>
-      </Link>
-    ) : <Typography><FireOutlined /> <FormattedMessage id="no_pricing" /></Typography>,
+    render: (_, record) =>
+      record.product?.price ? (
+        <Link to={`/courses/webinars/webinar/${record.id}/product`}>
+          <Button type="primary" icon={<DollarOutlined />}>
+            {roundTo(record.product.price, 2, 100)}
+          </Button>
+        </Link>
+      ) : (
+        <Typography>
+          <FireOutlined /> <FormattedMessage id="no_pricing" />
+        </Typography>
+      ),
   },
 ];
 

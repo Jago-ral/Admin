@@ -606,4 +606,18 @@ export const EMOTION_POOL = [
 export const formatPercent = (val: string | number) => {
   const num = typeof val === 'string' ? parseFloat(val) : val;
   return isNaN(num) ? '0' : Math.round(num * 100).toString();
-}
+};
+
+export const formatRating = (rating: number | string): string => {
+  const num = typeof rating === 'string' ? parseFloat(rating) : rating;
+
+  if (isNaN(num)) return '0.00';
+
+  return num.toFixed(2);
+};
+
+export const formatTime = (seconds: number) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};

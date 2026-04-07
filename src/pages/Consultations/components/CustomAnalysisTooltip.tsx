@@ -1,6 +1,7 @@
-import {ANALYSIS_COLORS, EMOTION_POOL, getLabelColorByValue} from "@/utils/utils";
-import {FormattedMessage} from "@@/exports";
-import styled from "styled-components";
+import type { ChartPoint } from '@/pages/Consultations/components/types';
+import { ANALYSIS_COLORS, EMOTION_POOL, formatTime, getLabelColorByValue } from '@/utils/utils';
+import { FormattedMessage } from '@@/exports';
+import styled from 'styled-components';
 
 const CustomTooltipWrapper = styled.div`
   background: white;
@@ -10,61 +11,82 @@ const CustomTooltipWrapper = styled.div`
   width: 260px;
   z-index: 1000;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+`;
 
-  .tooltip-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
-  }
-  .percentage-badge {
-    padding: 2px 10px;
-    font-weight: 700;
-    border-radius: 4px;
-  }
-  .preview-img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    background: #262626;
-    border-radius: 6px;
+const TooltipHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+`;
+
+const EmotionTitle = styled.span`
+  font-size: 16px;
+  font-weight: 600;
+`;
+
+const PercentageBadge = styled.span<{ $color: string }>`
+  padding: 2px 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  color: ${(props) => props.$color};
+  background: ${(props) => props.$color}15;
+  border: 1px solid ${(props) => props.$color}40;
+`;
+
+const TimeRangeWrapper = styled.div`
+  font-size: 12px;
+  color: ${ANALYSIS_COLORS.textSecondary};
+  margin-bottom: 4px;
+
+  b {
+    color: ${ANALYSIS_COLORS.darkText};
   }
 `;
-export const CustomAnalysisTooltip = ({ active, payload }: any) => {
-  if (!active || !payload?.length) return null;
+
+const PreviewImg = styled.img`
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  background: #262626;
+  border-radius: 6px;
+  margin-top: 8px;
+`;
+
+interface CustomAnalysisTooltipProps {
+  active?: boolean;
+  payload?: {
+    payload: ChartPoint;
+  }[];
+  label?: string | number;
+}
+
+export const CustomAnalysisTooltip = ({ active, payload }: CustomAnalysisTooltipProps) => {
+  if (!active || !payload || !payload.length) return null;
+
   const data = payload[0].payload;
   const emotion = EMOTION_POOL.find((e) => e.key === data.emotionKey) || EMOTION_POOL[6];
   const valColor = getLabelColorByValue(data.attention);
+  const startTime = data.second;
+  const interval = data.interval ? Number(data.interval) : 15;
+  const endTime = startTime + interval;
 
-  {/* TODO: Connect data with backend */}
+  const timeRange = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+
   return (
     <CustomTooltipWrapper>
-      <div className="tooltip-header">
-        <span style={{ fontSize: 16, fontWeight: 600 }}>
+      <TooltipHeader>
+        <EmotionTitle>
           {emotion.icon} <FormattedMessage id={emotion.labelId} />
-        </span>
-        <span
-          className="percentage-badge"
-          style={{
-            color: valColor,
-            background: `${valColor}15`,
-            border: `1px solid ${valColor}40`,
-          }}
-        >
-          {data.attention}%
-        </span>
-      </div>
-      <div style={{ fontSize: 12, color: ANALYSIS_COLORS.textSecondary, marginBottom: 4 }}>
-        <FormattedMessage id="time" />: {data.time}
-      </div>
-      <div style={{ fontSize: 13, color: ANALYSIS_COLORS.darkText, marginBottom: 12 }}>
-        <FormattedMessage id="ai_segment_analysis" />
-      </div>
-      <img
-        className="preview-img"
-        src="https://via.placeholder.com/240x120/1a1a1a/ffffff?text=Video+Frame"
-        alt="preview"
-      />
+        </EmotionTitle>
+        <PercentageBadge $color={valColor}>{data.attention}%</PercentageBadge>
+      </TooltipHeader>
+
+      <TimeRangeWrapper>
+        <FormattedMessage id="time_segment" />: <b>{timeRange}</b>
+      </TimeRangeWrapper>
+
+      {data.screen_path && <PreviewImg src={data.screen_path as string} alt="preview" />}
     </CustomTooltipWrapper>
   );
 };

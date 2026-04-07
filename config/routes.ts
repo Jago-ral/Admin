@@ -128,6 +128,12 @@
         component: './Webinars',
       },
       {
+        path: '/courses/webinars/effectiveness-analysis/:modelId/:id',
+        access: 'webinarDetailsPermission',
+        component: './Consultations/components/EffectivenessAnalysisDetails',
+        hideInMenu: true,
+      },
+      {
         path: '/courses/webinars/:tab',
         name: 'Webinars',
         access: 'webinarListPermission',
