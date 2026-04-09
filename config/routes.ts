@@ -132,6 +132,7 @@
         access: 'webinarDetailsPermission',
         component: './Consultations/components/EffectivenessAnalysisDetails',
         hideInMenu: true,
+        modelType: 'webinar',
       },
       {
         path: '/courses/webinars/:tab',
@@ -557,6 +558,7 @@
         access: 'consultationDetailsPermission',
         component: './Consultations/components/EffectivenessAnalysisDetails',
         hideInMenu: true,
+        modelType: 'consultation',
       },
       {
         name: 'StationaryEvents',

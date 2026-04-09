@@ -3,7 +3,7 @@ export interface RecommenderTerm {
   term: string;
   model_id: number;
   model_name: string;
-  model_type: "consultation" | "webinar";
+  model_type: 'consultation' | 'webinar';
   avg_attention: string;
   avg_emotions_angry: string;
   avg_emotions_disgusted: string;

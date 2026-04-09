@@ -1,6 +1,7 @@
 import CategoryTree from '@/components/CategoryTree';
 import { DATETIME_FORMAT } from '@/consts/dates';
-import type { RecommenderParams, RecommenderTerm } from '@/pages/Consultations/consultations';
+import type { RecommenderTerm } from '@/pages/Consultations/consultations';
+import { getRecommenderTerms } from '@/services/escola-lms/consultations';
 import {
   createTableOrderObject,
   EMOTION_POOL,
@@ -22,7 +23,7 @@ import { format } from 'date-fns';
 import type { ElementType } from 'react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { FormattedMessage, request } from 'umi';
+import { FormattedMessage } from 'umi';
 
 interface ActionIconProps {
   component: ElementType;
@@ -106,19 +107,6 @@ export const EffectivenessAnalysis = ({
   const actionRef = useRef<ActionType>();
   const [loading, setLoading] = useState(false);
 
-  const getRecommenderTerms = useCallback(
-    (params?: RecommenderParams) => {
-      return request<API.DefaultMetaResponse<RecommenderTerm>>(
-        `/api/admin/recommender/terms/${modelType}`,
-        {
-          method: 'GET',
-          params,
-        },
-      );
-    },
-    [modelType],
-  );
-
   const getDetailsPath = useCallback(
     (record: RecommenderTerm) => {
       if (modelType === 'webinar') {
@@ -171,7 +159,7 @@ export const EffectivenessAnalysis = ({
         renderFormItem: ({ type, ...rest }) => <CategoryTree {...rest} />,
       },
       {
-        title: <FormattedMessage id="averange_attention" />,
+        title: <FormattedMessage id="average_attention" />,
         dataIndex: 'avg_attention',
         hideInSearch: true,
         width: 80,
@@ -254,7 +242,9 @@ export const EffectivenessAnalysis = ({
         <ActionIcon key="sort" component={VerticalAlignMiddleOutlined} />,
         <ActionIcon key="settings" component={SettingOutlined} />,
       ]}
-      request={async ({ dateRange, category_id, pageSize, current, model_name }, sort) => {
+      request={async (params, sort) => {
+        const { dateRange, category_id, pageSize, current, model_name } = params;
+
         setLoading(true);
 
         const date_from = dateRange?.[0]
@@ -265,7 +255,7 @@ export const EffectivenessAnalysis = ({
           : undefined;
 
         try {
-          const response = await getRecommenderTerms({
+          const response = await getRecommenderTerms(modelType, {
             name: model_name,
             'categories[]': category_id,
             per_page: pageSize,
@@ -279,7 +269,7 @@ export const EffectivenessAnalysis = ({
 
           if (response.success) {
             return {
-              data: response.data,
+              data: response.data as unknown as RecommenderTerm[],
               total: response.meta.total,
               success: true,
             };

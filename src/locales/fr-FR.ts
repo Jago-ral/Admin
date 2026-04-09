@@ -132,7 +132,7 @@ export default {
   name: 'Nom',
   ID: 'ID',
   effectiveness_analysis: 'Analyse d’efficacité',
-  averange_attention: 'Attention moyenne',
+  average_attention: 'Attention moyenne',
   emotions: 'Émotions',
   rating: 'Évaluation',
   recording_short: 'Enreg.',

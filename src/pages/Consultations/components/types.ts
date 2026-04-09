@@ -23,3 +23,9 @@ export interface ChartPoint extends Omit<AnalysisData, 'attention'> {
   max_emotion_percentage_val: number;
   emotionKey: string;
 }
+
+export interface DotProps {
+  cx?: number;
+  cy?: number;
+  payload?: ChartPoint;
+}

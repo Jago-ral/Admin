@@ -1,26 +1,17 @@
-import { CustomAnalysisTooltip } from '@/pages/Consultations/components/CustomAnalysisTooltip';
+import AnalysisCharts from '@/pages/Consultations/components/EffectivenessAnalysisDetails/AnalysisCharts';
+import DownloadSection from '@/pages/Consultations/components/EffectivenessAnalysisDetails/DownloadSection';
 import type {
   AnalysisData,
   AnalysisMeta,
   ChartPoint,
 } from '@/pages/Consultations/components/types';
 import { getAnalyticsChartFrames, getModelAnalytics } from '@/services/escola-lms/consultations';
-import {ANALYSIS_COLORS, EMOTION_POOL, EmotionKey, formatRating, getLabelColorByValue} from '@/utils/utils';
-import { DownloadOutlined } from '@ant-design/icons';
+import { ANALYSIS_COLORS, EmotionKey, formatRating, getLabelColorByValue } from '@/utils/utils';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Select, Space, Spin, Typography, message } from 'antd';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Card, Col, Select, Space, Typography, message } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { FormattedMessage, useLocation, useParams } from 'umi';
+import { FormattedMessage, Link, useParams, useSelectedRoutes } from 'umi';
 
 const { Text } = Typography;
 
@@ -29,25 +20,9 @@ const PageWrapper = styled.div`
   min-height: 100vh;
 `;
 
-const StyledDownloadButton = styled(Button)`
-  border-radius: 8px;
-`;
-
-const ExpiryText = styled(Text)`
-  font-size: 13px;
-  margin-left: 4px;
-`;
-
-const ExpiryTime = styled.b`
-  color: ${ANALYSIS_COLORS.darkText};
-`;
-
 const StyledCard = styled(Card)`
   background: transparent;
   box-shadow: none;
-  .ant-card-body {
-    padding: 0;
-  }
 `;
 
 const ControlsRow = styled(Col)`
@@ -57,14 +32,15 @@ const ControlsRow = styled(Col)`
   margin-bottom: 24px;
 `;
 
-const RatingValue = styled.div`
+const RatingValue = styled(Text)<{ color: string }>`
   font-size: 24px;
   font-weight: 800;
-  color: ${ANALYSIS_COLORS.green};
   padding: 4px 12px;
-  border: 1px solid #b7eb8f;
   border-radius: 6px;
-  background: #f6ffed;
+  color: ${(props) => props.color};
+  background: ${(props) => `${props.color}33`};
+  border: 1px solid ${(props) => props.color};
+  white-space: nowrap;
 `;
 
 const RatingDescription = styled(Text)`
@@ -82,54 +58,9 @@ const ResolutionLabel = styled(Text)`
   font-size: 13px;
 `;
 
-const ScrollContainer = styled.div`
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  background: transparent;
-  touch-action: pan-x;
-  &::-webkit-scrollbar {
-    height: 8px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #e8e8e8;
-    border-radius: 4px;
-  }
-`;
-
-const ChartWrapper = styled.div<{ $width: string }>`
-  width: ${(props) => props.$width};
-  min-width: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 20px 0 100px 0;
-`;
-
-const ChartHeader = styled.div<{ $paddingLeft: number }>`
-  margin-bottom: 16px;
-  padding-left: ${(props) => props.$paddingLeft}px;
-`;
-
-const ChartContainer = styled.div<{ $height: number }>`
-  height: ${(props) => props.$height}px;
-  width: 100%;
-  position: relative;
-`;
-
-const EmotionIconWrapper = styled.div`
-  font-size: 26px;
-  text-align: center;
-`;
-
 const SectionTitle = styled(Text)`
   font-size: 16px;
 `;
-
-interface DotProps {
-  cx?: number;
-  cy?: number;
-  payload?: ChartPoint;
-}
 
 const TIME_OPTIONS = [
   { value: 15, label: <FormattedMessage id="time.seconds" values={{ value: 15 }} /> },
@@ -140,18 +71,22 @@ const TIME_OPTIONS = [
 
 const EffectivenessAnalysisDetails = () => {
   const { modelId, id: termId } = useParams<{ modelType: string; modelId: string; id: string }>();
-  const { pathname } = useLocation();
   const [res, setRes] = useState<number>(15);
   const [loading, setLoading] = useState<boolean>(false);
   const [analysisMeta, setAnalysisMeta] = useState<AnalysisMeta | null>(null);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
-  const Y_AXIS_WIDTH = 45;
+  const routes = useSelectedRoutes();
+  const color = useMemo(
+    () => getLabelColorByValue(analysisMeta?.rating ? analysisMeta.rating : 0),
+    [analysisMeta?.rating],
+  );
+
+  console.log(color, 'color');
 
   const modelType = useMemo(() => {
-    if (pathname.includes('/consultations/')) return 'consultation';
-    if (pathname.includes('/webinars/')) return 'webinar';
-    return '';
-  }, [pathname]);
+    const currentRoute = routes[routes.length - 1]?.route as any;
+    return currentRoute?.modelType;
+  }, [routes]);
 
   const breadcrumbItems = useMemo(
     () => [
@@ -161,8 +96,11 @@ const EffectivenessAnalysisDetails = () => {
         ),
       },
       {
-        title: <FormattedMessage id={modelType === 'webinar' ? 'webinars' : 'consultations'} />,
-        path: modelType === 'webinar' ? '/courses/webinars/list' : '/other/consultations',
+        title: (
+          <Link to={modelType === 'webinar' ? '/courses/webinars/list' : '/other/consultations'}>
+            <FormattedMessage id={modelType === 'webinar' ? 'webinars' : 'consultations'} />
+          </Link>
+        ),
       },
       {
         title: analysisMeta?.model_name || <FormattedMessage id="details" />,
@@ -194,7 +132,7 @@ const EffectivenessAnalysisDetails = () => {
       setLoading(true);
       try {
         const resFrames = await getAnalyticsChartFrames(analysisMeta.id, { interval: res });
-        if (resFrames?.success && resFrames.data) {
+        if (resFrames?.success && resFrames.data && resFrames.data.length > 0) {
           const firstTs = new Date(resFrames.data[0].window_start).getTime();
           const formatted: ChartPoint[] = resFrames.data.map((item: AnalysisData) => {
             const currentTs = new Date(item.window_start).getTime();
@@ -211,9 +149,12 @@ const EffectivenessAnalysisDetails = () => {
             };
           });
           setChartData(formatted);
+        } else {
+          setChartData([]);
         }
       } catch (e) {
         console.error(e);
+        message.error('Error fetching chart data');
       } finally {
         setLoading(false);
       }
@@ -226,80 +167,17 @@ const EffectivenessAnalysisDetails = () => {
     return chartData.length > 5 ? `${calculatedWidth}px` : '100%';
   }, [chartData.length, colWidth]);
 
-  const renderDynamicGradient = useCallback(
-    (gradientId: string, isArea: boolean) => {
-      if (chartData.length === 0) return null;
-      return (
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-          {chartData.map((point, index) => (
-            <stop
-              key={`${gradientId}-${point.time}`}
-              offset={`${(index / (chartData.length - 1)) * 100}%`}
-              stopColor={getLabelColorByValue(point.attention)}
-              stopOpacity={isArea ? 0.4 : 1}
-            />
-          ))}
-        </linearGradient>
-      );
-    },
-    [chartData],
-  );
-
-  const renderEmotionDot = useCallback((props: DotProps) => {
-    const { cx, payload } = props;
-    if (cx === undefined || !payload) return <Fragment />;
-    const emotion = EMOTION_POOL.find((e) => e.key === payload.emotionKey) || EMOTION_POOL.find((e) => e.key === EmotionKey.NEUTRAL)!;
-    return (
-      <foreignObject key={`${cx}-${payload.time}`} x={cx - 15} y={30} width={30} height={40}>
-        <EmotionIconWrapper title={payload.emotionKey}>{emotion.icon}</EmotionIconWrapper>
-      </foreignObject>
-    );
-  }, []);
-
-  const formatExpirationTime = useCallback((ms: number | null) => {
-    if (!ms || ms <= 0) return '0s';
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    const pad = (num: number) => num.toString().padStart(2, '0');
-    return hours > 0
-      ? `${hours}h ${pad(minutes)}m ${pad(seconds)}s`
-      : `${minutes}m ${pad(seconds)}s`;
-  }, []);
-
   return (
     <PageContainer
       header={{
         breadcrumb: { items: breadcrumbItems },
         title: analysisMeta?.model_name,
         extra: [
-          analysisMeta?.url && (
-            <Space key="download-section" size="middle">
-              <StyledDownloadButton
-                type="primary"
-                icon={<DownloadOutlined />}
-                size="large"
-                onClick={() => analysisMeta?.url && window.open(analysisMeta?.url, '_blank')}
-              >
-                <FormattedMessage id="download_recording" />
-              </StyledDownloadButton>
-              {analysisMeta.url_expiration_time_millis && (
-                <ExpiryText type="secondary">
-                  <FormattedMessage
-                    id="recording_available_until"
-                    values={{
-                      time: (
-                        <ExpiryTime>
-                          {formatExpirationTime(analysisMeta.url_expiration_time_millis)}
-                        </ExpiryTime>
-                      ),
-                    }}
-                  />
-                </ExpiryText>
-              )}
-            </Space>
-          ),
+          <DownloadSection
+            key="download"
+            url={analysisMeta?.url}
+            expirationTime={analysisMeta?.url_expiration_time_millis}
+          />,
         ],
       }}
     >
@@ -311,7 +189,7 @@ const EffectivenessAnalysisDetails = () => {
                 <FormattedMessage id="engagement_rating" />
               </SectionTitle>
               <Space size="large">
-                <RatingValue>{formatRating(analysisMeta?.rating || 0)}</RatingValue>
+                <RatingValue color={color}>{formatRating(analysisMeta?.rating || 0)}</RatingValue>
                 <RatingDescription type="secondary">
                   <FormattedMessage id="ai_analysis_average" />
                 </RatingDescription>
@@ -331,100 +209,14 @@ const EffectivenessAnalysisDetails = () => {
             </ResolutionPicker>
           </ControlsRow>
 
-          <Col span={24}>
-            <Spin spinning={loading}>
-              <ScrollContainer>
-                <ChartWrapper $width={chartWidth}>
-                  <ChartHeader $paddingLeft={Y_AXIS_WIDTH}>
-                    <SectionTitle strong>
-                      <FormattedMessage id="listeners_engagement" />
-                    </SectionTitle>
-                  </ChartHeader>
-                  <ChartContainer $height={380}>
-                    <ResponsiveContainer>
-                      <AreaChart
-                        data={chartData}
-                        margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
-                      >
-                        <defs>
-                          {renderDynamicGradient('dynamicFill', true)}
-                          {renderDynamicGradient('dynamicStroke', false)}
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                        <XAxis
-                          dataKey="time"
-                          axisLine={{ stroke: ANALYSIS_COLORS.border }}
-                          tick={{ fontSize: 12 }}
-                          dy={10}
-                          interval={res >= 300 ? 0 : 'preserveStartEnd'}
-                        />
-                        <YAxis
-                          width={Y_AXIS_WIDTH}
-                          domain={[0, 100]}
-                          ticks={[0, 50, 100]}
-                          tickFormatter={(v: number) => `${v}%`}
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 11 }}
-                        />
-                        <RechartsTooltip
-                          content={<CustomAnalysisTooltip />}
-                          cursor={{ stroke: '#40a9ff', strokeWidth: 1.5 }}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="attention"
-                          stroke="url(#dynamicStroke)"
-                          strokeWidth={3}
-                          fill="url(#dynamicFill)"
-                          isAnimationActive={false}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-
-                  <ChartHeader $paddingLeft={Y_AXIS_WIDTH} style={{ marginTop: 60 }}>
-                    <SectionTitle strong>
-                      <FormattedMessage id="detected_emotions" />
-                    </SectionTitle>
-                  </ChartHeader>
-                  <ChartContainer $height={250}>
-                    <ResponsiveContainer>
-                      <AreaChart
-                        data={chartData}
-                        margin={{ top: 0, right: 30, left: 0, bottom: 100 }}
-                      >
-                        <XAxis
-                          dataKey="time"
-                          axisLine={{ stroke: ANALYSIS_COLORS.border }}
-                          tickLine={false}
-                          tick={{ fontSize: 12 }}
-                          dy={10}
-                          interval={res >= 300 ? 0 : 'preserveStartEnd'}
-                        />
-                        <YAxis
-                          width={Y_AXIS_WIDTH}
-                          axisLine={false}
-                          tick={false}
-                          tickLine={false}
-                          domain={[0, 100]}
-                        />
-                        <RechartsTooltip content={<CustomAnalysisTooltip />} />
-                        <Area
-                          type="monotone"
-                          dataKey="max_emotion_percentage_val"
-                          stroke="none"
-                          fill="none"
-                          isAnimationActive={false}
-                          dot={renderEmotionDot}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </ChartWrapper>
-              </ScrollContainer>
-            </Spin>
-          </Col>
+          {chartData && (
+            <AnalysisCharts
+              chartData={chartData}
+              loading={loading}
+              chartWidth={chartWidth}
+              resolution={res}
+            />
+          )}
         </StyledCard>
       </PageWrapper>
     </PageContainer>

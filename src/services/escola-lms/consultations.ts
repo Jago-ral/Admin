@@ -1,3 +1,4 @@
+import type { RecommenderParams } from '@/pages/Consultations/consultations';
 import type { AxiosRequestConfig } from '@umijs/max';
 import { request } from 'umi';
 
@@ -94,17 +95,12 @@ export async function changeTermDate(
 }
 
 /** GET /api/admin/recommender/terms/{modelType} */
-export async function getRecommenderTerms(
-  modelType: string,
-  params?: API.ConsultationsParams & { date_from?: string; date_to?: string },
-  options?: AxiosRequestConfig,
-) {
+export async function getRecommenderTerms(modelType: string, params?: RecommenderParams) {
   return request<API.DefaultMetaResponse<API.Consultation>>(
     `/api/admin/recommender/terms/${modelType}`,
     {
       method: 'GET',
       params,
-      ...(options || {}),
     },
   );
 }
