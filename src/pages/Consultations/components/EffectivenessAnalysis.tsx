@@ -11,7 +11,6 @@ import {
 import { Link } from '@@/exports';
 import {
   DownloadOutlined,
-  PlusOutlined,
   ReloadOutlined,
   SettingOutlined,
   VerticalAlignMiddleOutlined,
