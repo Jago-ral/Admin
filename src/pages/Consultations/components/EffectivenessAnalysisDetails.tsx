@@ -7,7 +7,7 @@ import type {
 } from '@/pages/Consultations/components/types';
 import { getAnalyticsChartFrames, getModelAnalytics } from '@/services/escola-lms/consultations';
 import {
-  ANALYSIS_COLORS, EmotionKey, formatExpirationTime, formatRating, getLabelColorByValue,
+  ANALYSIS_COLORS, EmotionKey, formatRating, getLabelColorByValue,
   getRatingLabelColorByValue
 } from '@/utils/utils';
 import { PageContainer } from '@ant-design/pro-components';
