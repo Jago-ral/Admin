@@ -11,8 +11,9 @@ import { createWebinar, getWebinar, updateWebinar } from '@/services/escola-lms/
 import { splitImagePath, tagsArrToIds } from '@/utils/utils';
 import ProCard from '@ant-design/pro-card';
 import ProForm, {
+  ProFormCheckbox,
   ProFormDateTimePicker,
-  ProFormSelect,
+  ProFormSelect, ProFormSwitch,
   ProFormText,
   ProFormTextArea,
 } from '@ant-design/pro-form';
@@ -20,6 +21,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import { Alert, Button, Col, Row, Spin, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormattedMessage, history, useIntl, useParams } from 'umi';
+import CustomCheckbox from "@/pages/Roles/components/CustomCheckbox";
 
 enum TabNames {
   ATTRIBUTES = 'attributes',
@@ -314,6 +316,14 @@ const WebinarForm = () => {
               >
                 <UserSelect multiple />
               </ProForm.Item>
+            </ProForm.Group>
+            <ProForm.Group>
+              <ProFormSwitch
+                name="analyze_enabled"
+                label={<FormattedMessage id="ai_analysis_enable_label" />}
+                tooltip={<FormattedMessage id="ai_analysis_enable_tooltip" />}
+                width="lg"
+              />
             </ProForm.Group>
             <ProForm.Group>
               <ProFormTextArea
