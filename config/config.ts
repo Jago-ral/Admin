@@ -83,7 +83,7 @@ export default defineConfig({
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
    */
-  title: 'Wellms LMS Admin Panel',
+  title: 'MICA Academy - Admin Panel',
   layout: {
     locale: true,
     ...defaultSettings,
@@ -103,7 +103,7 @@ export default defineConfig({
    */
   locale: {
     // default zh-CN
-    default: 'zh-CN',
+    default: 'fr-FR',
     antd: true,
     // default true, when it is true, will use `navigator.language` overwrite default
     baseNavigator: true,

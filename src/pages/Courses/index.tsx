@@ -18,18 +18,18 @@ import { FormattedMessage, Link, useIntl } from 'umi';
 import CategoryTree from '@/components/CategoryTree';
 import SecureUpload from '@/components/SecureUpload';
 import Tags from '@/components/Tags';
-import UserSelect from '@/components/UserSelect';
+// import UserSelect from '@/components/UserSelect';
 import PERMISSIONS from '@/consts/permissions';
 import { usePermissions } from '@/hooks/usePermissions';
 import { cloneCourse, course, exportCourse, removeCourse } from '@/services/escola-lms/course';
 import { createTableOrderObject, roundTo } from '@/utils/utils';
 import './style.less';
 
-function getUserItems(v: number[] | API.UserItem[]): API.UserItem[] {
-  return ((v ?? []) as (API.UserItem | number)[])?.filter(
-    (i): i is API.UserItem => typeof i !== 'number',
-  );
-}
+// function getUserItems(v: number[] | API.UserItem[]): API.UserItem[] {
+//   return ((v ?? []) as (API.UserItem | number)[])?.filter(
+//     (i): i is API.UserItem => typeof i !== 'number',
+//   );
+// }
 
 export const TableColumns: ProColumns<API.CourseListItem>[] = [
   {
@@ -120,25 +120,25 @@ export const TableColumns: ProColumns<API.CourseListItem>[] = [
     valueType: 'textarea',
     search: false,
   },
-  {
-    title: <FormattedMessage id="author_tutor" />,
-    dataIndex: 'authors',
-    key: 'authors',
-    sorter: false,
-    render: (_, record) => (
-      <>
-        {getUserItems(record.authors ?? []).map((author) => (
-          <Tag key={`${record?.id}-${author.id}`}>{`${author.first_name} ${author.last_name}`}</Tag>
-        ))}
-      </>
-    ),
-    renderFormItem: (_i, { type, defaultRender, ...rest }, form) => {
-      if (type === 'form') return null;
-      const stateType = form.getFieldValue('state');
+  // {
+  //   title: <FormattedMessage id="author_tutor" />,
+  //   dataIndex: 'authors',
+  //   key: 'authors',
+  //   sorter: false,
+  //   render: (_, record) => (
+  //     <>
+  //       {getUserItems(record.authors ?? []).map((author) => (
+  //         <Tag key={`${record?.id}-${author.id}`}>{`${author.first_name} ${author.last_name}`}</Tag>
+  //       ))}
+  //     </>
+  //   ),
+  //   renderFormItem: (_i, { type, defaultRender, ...rest }, form) => {
+  //     if (type === 'form') return null;
+  //     const stateType = form.getFieldValue('state');
 
-      return <UserSelect multiple {...rest} state={{ type: stateType }} />;
-    },
-  },
+  //     return <UserSelect multiple {...rest} state={{ type: stateType }} />;
+  //   },
+  // },
   {
     title: <FormattedMessage id="categories" defaultMessage="Categories" />,
     dataIndex: 'category_id',
@@ -204,7 +204,7 @@ export const TableColumns: ProColumns<API.CourseListItem>[] = [
   },
 ];
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const TableList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -345,34 +345,7 @@ const TableList: React.FC = () => {
             </div>
           </ProCard>
         )}
-        <ProCard
-          layout="center"
-          style={{
-            backgroundColor: '#FFED8E',
-          }}
-        >
-          <a
-            href={'https://docs.wellms.io/app-guide/'}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            <Title level={5}>
-              <FormattedMessage
-                id="course_guide_title"
-                defaultMessage="Not sure how to create a course?"
-              />
-            </Title>
-            <Text>
-              <FormattedMessage
-                id="course_guide_text"
-                defaultMessage="Check out our guide and learn how to do it."
-              />
-            </Text>
-          </a>
-        </ProCard>
+
       </ProCard>{' '}
       <ProTable<API.CourseListItem, API.CourseParams>
         loading={loading}
@@ -386,7 +359,7 @@ const TableList: React.FC = () => {
           layout: 'vertical',
         }}
         request={(
-          { pageSize, current, title, active, category_id, tag, status, authors },
+          { pageSize, current, title, active, category_id, tag, status },
           sort,
         ) => {
           setLoading(true);
@@ -397,7 +370,7 @@ const TableList: React.FC = () => {
             page: current,
             category_id,
             tag,
-            authors,
+            // authors,
             active: active && active,
             ...createTableOrderObject(sort, 'created_at'),
           }).then((response) => {

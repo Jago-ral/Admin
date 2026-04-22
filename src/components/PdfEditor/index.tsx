@@ -4,7 +4,7 @@ declare const REACT_APP_API_URL: string;
 
 // @ts-ignore
 import { ReportBro } from 'reportbro-designer';
-import '../../../node_modules/reportbro-designer/dist/reportbro.css';
+import 'reportbro-designer/dist/reportbro.css';
 import './index.css';
 
 import type { ReportBroTemplate } from './types';
@@ -52,8 +52,8 @@ const addVariablesToTemplate = (
 
   const dict: Record<string, ReportBroTemplate['parameters'][number]> = template.parameters
     ? template.parameters.reduce((acc, curr) => {
-        return { ...acc, [curr.name]: curr };
-      }, {})
+      return { ...acc, [curr.name]: curr };
+    }, {})
     : {};
 
   const tpl: Record<string, ReportBroTemplate['parameters'][number]> = variables
@@ -117,9 +117,8 @@ export const PdfEditor: React.FC<{
         fonts: [{ name: 'Open Sans', value: 'Open Sans' }],
         defaultFont: 'Open Sans',
         // src={`${window.REACT_APP_API_URL || REACT_APP_API_URL}/api/scorm/play/${uuid}`}
-        reportServerUrl: `${
-          window.REACT_APP_API_URL || REACT_APP_API_URL
-        }/api/pdfs/reportbro/report/run`,
+        reportServerUrl: `${window.REACT_APP_API_URL || REACT_APP_API_URL
+          }/api/pdfs/reportbro/report/run`,
         saveCallback: () => {
           onTemplateSaved(rb.getReport());
         },

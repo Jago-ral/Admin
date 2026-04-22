@@ -1,4 +1,4 @@
-import { GithubOutlined } from '@ant-design/icons';
+// import { GithubOutlined } from '@ant-design/icons';
 import { DefaultFooter } from '@ant-design/pro-components';
 import { useMemo } from 'react';
 import { useModel } from 'umi';
@@ -24,17 +24,17 @@ export default () => {
   const links = useMemo(
     () => [
       {
-        key: companyInfo.name || 'Wellms',
-        title: companyInfo.name || 'Wellms',
-        href: companyInfo.url || 'https://www.wellms.io/',
+        key: companyInfo.name || 'MICA academy',
+        title: companyInfo.name || 'MICA academy',
+        href: companyInfo.url || 'https://google.fr',
         blankTarget: true,
       },
-      {
-        key: 'github',
-        title: <GithubOutlined />,
-        href: 'https://github.com/EscolaLMS',
-        blankTarget: true,
-      },
+      // {
+      //   key: 'github',
+      //   title: <GithubOutlined />,
+      //   href: 'https://github.com/EscolaLMS',
+      //   blankTarget: true,
+      // },
     ],
     [companyInfo.name, companyInfo.url],
   );
@@ -64,7 +64,7 @@ export default () => {
           style={{
             background: 'none',
           }}
-          copyright={`${currentYear} ${companyInfo.name || 'Wellms'}`}
+          copyright={`${currentYear} ${companyInfo.name || 'MICA Academy'}`}
           links={links.map(({ key, href, title, blankTarget }) => ({
             key,
             href,
