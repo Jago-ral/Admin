@@ -12,7 +12,7 @@ import { splitImagePath, tagsArrToIds } from '@/utils/utils';
 import ProCard from '@ant-design/pro-card';
 import ProForm, {
   ProFormDateTimePicker,
-  ProFormSelect,
+  ProFormSelect, ProFormSwitch,
   ProFormText,
   ProFormTextArea,
 } from '@ant-design/pro-form';
@@ -100,13 +100,13 @@ const WebinarForm = () => {
         if (isNew) {
           response = await createWebinar(postData);
           if (response.success) {
-            history.push(`/courses/webinars/${response.data.id}`);
+            history.push(`/courses/webinars/webinar/${response.data.id}`);
           }
         } else {
           response = await updateWebinar(Number(webinar), postData);
           if (response.success) {
             validateCourseEdit(response.data);
-            history.push(`/courses/webinars/${response.data.id}/${tab}`);
+            history.push(`/courses/webinars/webinar/${response.data.id}/${tab}`);
           }
         }
         message.success(response.message);
@@ -131,7 +131,7 @@ const WebinarForm = () => {
   return (
     <PageContainer
       title={
-        isNew ? <FormattedMessage id="menu.Webinars" /> : <FormattedMessage id="webinar.edit" />
+        isNew ? <FormattedMessage id="menu.NewWebinar" /> : <FormattedMessage id="webinar.edit" />
       }
       header={{
         breadcrumb: {
@@ -175,7 +175,7 @@ const WebinarForm = () => {
                 showConfirmModal: true,
               });
             } else {
-              history.push(`/courses/webinars/${webinar}/${key}`);
+              history.push(`/courses/webinars/webinar/${webinar}/${key}`);
             }
           },
         }}
@@ -316,6 +316,14 @@ const WebinarForm = () => {
               </ProForm.Item>
             </ProForm.Group>
             <ProForm.Group>
+              <ProFormSwitch
+                name="analyze_enabled"
+                label={<FormattedMessage id="ai_analysis_enable_label" />}
+                tooltip={<FormattedMessage id="ai_analysis_enable_tooltip" />}
+                width="lg"
+              />
+            </ProForm.Group>
+            <ProForm.Group>
               <ProFormTextArea
                 name="short_desc"
                 label={<FormattedMessage id="short_description" />}
@@ -369,7 +377,7 @@ const WebinarForm = () => {
               <ProFormImageUpload
                 folder={`webinar/${webinar}`}
                 title="image"
-                action={`/api/admin/webinars/${webinar}`}
+                action={`/api/admin/webinars/webinar/${webinar}`}
                 src_name="image_url"
                 form_name="image"
                 getUploadedSrcField={(info) => info.file.response.data.image_url}
@@ -414,7 +422,7 @@ const WebinarForm = () => {
               <ProFormImageUpload
                 folder={`webinar/${webinar}`}
                 title="logotype"
-                action={`/api/admin/webinars/${webinar}`}
+                action={`/api/admin/webinars/webinar/${webinar}`}
                 src_name="logotype_url"
                 form_name="logotype"
                 getUploadedSrcField={(info) => info.file.response.data.logotype_url}
