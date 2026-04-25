@@ -257,7 +257,8 @@ export default {
     'The editor is WYSIWYG and includes formatting tools whilst retaining the ability to write markdown shortcuts inline and output plain Markdown.',
   short_description: 'Short description',
   ai_analysis_enable_label: 'Analyse de l’enregistrement par IA',
-  ai_analysis_enable_tooltip: 'Cochez cette option pour activer l’analyse de l’attention et de la satisfaction des utilisateurs pendant la réunion',
+  ai_analysis_enable_tooltip:
+    'Cochez cette option pour activer l’analyse de l’attention et de la satisfaction des utilisateurs pendant la réunion',
   description: 'Description',
   description_tooltip:
     'The editor is WYSIWYG and includes formatting tools whilst retaining the ability to write markdown shortcuts inline and output plain Markdown.',
@@ -590,4 +591,8 @@ export default {
   file_downloaded_error: 'Impossible de télécharger le fichier',
   pressSaveToCreateQuestions: "Créez ce sujet avant d'ajouter des questions",
   selectNewQuestionType: 'Sélectionner un nouveau type de question',
+
+  stacking_order: 'Ordre',
+  students: 'Apprenants',
+  student: 'Apprenant',
 };

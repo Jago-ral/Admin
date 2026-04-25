@@ -96,13 +96,6 @@ const components: DashboardData = {
       asDonut: true,
     },
   }),
-  'pie-chart-TutorsPopularityMetric': wrap({
-    w: 1,
-    h: 4,
-    maxH: 4,
-    component: PieChart,
-    props: { metric: 'EscolaLms\\Reports\\Metrics\\TutorsPopularityMetric' },
-  }),
   add: wrap({
     w: 1,
     h: 1,
@@ -118,7 +111,6 @@ const defaultStageAwfComponents: ComponentsKeys[] = [
   'pie-chart-CoursesMoneySpentMetric',
   'pie-chart-CoursesPopularityMetric',
   'pie-chart-CoursesSecondsSpentMetric',
-  'pie-chart-TutorsPopularityMetric',
   'add',
 ];
 
@@ -131,7 +123,6 @@ const defaultStageComponents: ComponentsKeys[] = [
   'pie-chart-CoursesMoneySpentMetric',
   'pie-chart-CoursesPopularityMetric',
   'pie-chart-CoursesSecondsSpentMetric',
-  'pie-chart-TutorsPopularityMetric',
   'add',
 ];
 

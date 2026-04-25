@@ -262,7 +262,7 @@ const TableList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button key={'show_tree'} onClick={() => setShowTree(true)}>
-            <FormattedMessage id="show_tree" defaultMessage="Show Tree" />
+            <FormattedMessage id="show_tree" defaultMessage="Arborescence" />
           </Button>,
           <Button
             type="primary"

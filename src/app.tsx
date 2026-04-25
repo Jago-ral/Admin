@@ -6,10 +6,10 @@ import { getLocale, history } from '@umijs/max';
 import { currentUser as queryCurrentUser } from './services/escola-lms/api';
 //import { errorConfig } from './requestErrorConfig';
 import { localeInfo } from '@@/plugin-locale/localeExports';
-import { BookOutlined } from '@ant-design/icons';
+// import { BookOutlined } from '@ant-design/icons';
 import { addLocale } from '@umijs/max';
 import { notification } from 'antd';
-import { FormattedMessage } from 'umi';
+// import { FormattedMessage } from 'umi';
 import defaultSettings from '../config/defaultSettings';
 import RestrictedPage from './pages/403';
 import { packages } from './services/escola-lms/packages';
@@ -197,16 +197,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         history.push(`/user/login?redirect=${url}`);
       }
     },
-    links: [
-      <>
-        <BookOutlined />
-        <span>
-          <a href="http://docs.wellms.io/" target="_blank" rel="noreferrer">
-            <FormattedMessage id="documentation" />
-          </a>
-        </span>
-      </>,
-    ],
+    links: [],
     menuHeaderRender: undefined,
     //  403
     unAccessible: <RestrictedPage />,
@@ -235,11 +226,11 @@ const authHeaderInterceptor = (url: string, options: AxiosRequestConfig) => {
       interceptors: true,
       headers: token
         ? {
-            ...options.headers,
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`,
-            'X-locale': getLocale(),
-          }
+          ...options.headers,
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-locale': getLocale(),
+        }
         : optionHeaders,
     },
   };

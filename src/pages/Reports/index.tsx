@@ -18,9 +18,6 @@ export default (): React.ReactNode => {
         <ProCard colSpan={12} layout="center">
           <PieChart metric={'EscolaLms\\Reports\\Metrics\\CoursesSecondsSpentMetric'} />
         </ProCard>
-        <ProCard colSpan={12} layout="center">
-          <PieChart metric={'EscolaLms\\Reports\\Metrics\\TutorsPopularityMetric'} />
-        </ProCard>
       </ProCard>
     </PageContainer>
   );
