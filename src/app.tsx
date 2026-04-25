@@ -161,18 +161,20 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     history.push(`/user/login?redirect=${url}`);
   }
 
-  let logo = 'logo.svg';
+  let logo = '/logo.svg';
 
   const configLogo = initialState?.config?.find((row) => row.key === 'logo');
   const backgroundColor = initialState?.publicConfig?.global?.contentBackgroundColor ?? '#f0f2f5';
 
-  if (configLogo) {
-    logo = configLogo.data;
+  // if (configLogo) {
+  //   logo = configLogo.data;
 
-    if (!logo.includes('http')) {
-      logo = `${window.REACT_APP_API_URL || REACT_APP_API_URL}/storage${logo}`;
-    }
-  }
+  //   if (!logo.includes('http')) {
+  //     logo = `${window.REACT_APP_API_URL || REACT_APP_API_URL}/storage${logo}`;
+  //   }
+  // }
+
+  // console.log('logo', logo);
 
   return {
     ...initialState?.settings,
