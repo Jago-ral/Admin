@@ -39,7 +39,7 @@ const AuthLayout: React.FC<PropsWithChildren> = ({ children }) => {
             <img
               alt="logo"
               className={configLogo ? styles['custom-logo'] : styles.logo}
-              src={configLogo || '/logo.svg'}
+              src={configLogo || '/logo-horizontal.png'}
             />
           </Link>
         </div>

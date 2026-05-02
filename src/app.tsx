@@ -161,7 +161,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     history.push(`/user/login?redirect=${url}`);
   }
 
-  let logo = '/logo.svg';
+  let logo = '/logo-horizontal.png';
 
   const configLogo = initialState?.config?.find((row) => row.key === 'logo');
   const backgroundColor = initialState?.publicConfig?.global?.contentBackgroundColor ?? '#f0f2f5';
