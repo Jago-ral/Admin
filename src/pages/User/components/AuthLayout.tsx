@@ -39,6 +39,7 @@ const AuthLayout: React.FC<PropsWithChildren> = ({ children }) => {
             <img
               alt="logo"
               className={configLogo ? styles['custom-logo'] : styles.logo}
+              style={{ height: 120 }}
               src={configLogo || '/logo-horizontal.png'}
             />
           </Link>
