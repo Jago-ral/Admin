@@ -94,6 +94,13 @@
         component: './Categories',
       },
       {
+        path: '/courses/access',
+        name: 'Acces aux cours',
+        icon: 'experiment',
+        access: 'courseAccessListPermission',
+        component: './CourseAccess',
+      },
+      {
         path: '/courses/quiz-reports',
         name: 'Quiz Reports',
         icon: 'read',
