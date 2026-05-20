@@ -64,7 +64,7 @@ const QuizReportDetailsDescription: React.FC<Props> = ({ data }) => (
         span={1.5}
         label={<FormattedMessage id="max_score" defaultMessage="Max score" />}
       >
-        {data.max_score}
+        100
       </Descriptions.Item>
     </Descriptions>
   </Space>

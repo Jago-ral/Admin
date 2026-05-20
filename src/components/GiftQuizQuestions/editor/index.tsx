@@ -25,8 +25,8 @@ interface Props {
   onSubmit: (quizQuestion: QuizQuestionSubmitData) => Promise<boolean>;
   values?: API.QuizQuestion;
   competencyChallengeCategoryTreeProps?:
-    | boolean
-    | Omit<CompetencyChallengeCategoryTreeProps, 'value' | 'onChange'>;
+  | boolean
+  | Omit<CompetencyChallengeCategoryTreeProps, 'value' | 'onChange'>;
 }
 
 export const GiftQuizQuestionEditor: React.FC<Props> = ({
@@ -94,6 +94,10 @@ export const GiftQuizQuestionEditor: React.FC<Props> = ({
             name="score"
             label={<FormattedMessage id="Questions.score" defaultMessage="Score" />}
             rules={[{ required: true, message: <FormattedMessage id="field_required" /> }]}
+            min={0}
+            max={100}
+            initialValue={5}
+            fieldProps={{ step: 1 }}
           />
         )}
         {competencyChallengeCategoryTreeProps && (

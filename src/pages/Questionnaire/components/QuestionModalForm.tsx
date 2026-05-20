@@ -107,7 +107,8 @@ export const QuestionModalForm: React.FC<{
             defaultMessage: 'max_score',
           })}
           min={0}
-          max={9999}
+          max={100}
+          initialValue={5}
           fieldProps={{ step: 1 }}
         />
       )}

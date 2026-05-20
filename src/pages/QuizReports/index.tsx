@@ -132,12 +132,7 @@ export const TableColumns: ProColumns<API.QuizAttempt>[] = [
     hideInSearch: true,
     sorter: true,
   },
-  {
-    title: <FormattedMessage id="max_score" defaultMessage="Max score" />,
-    dataIndex: 'max_score',
-    hideInSearch: true,
-    sorter: true,
-  },
+
   {
     title: <FormattedMessage id="started_at" defaultMessage="Started at" />,
     dataIndex: 'started_at',
