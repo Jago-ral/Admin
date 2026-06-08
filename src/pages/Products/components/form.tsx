@@ -287,16 +287,16 @@ const ProductsForm: React.FC<{
           (related_product) => typeof related_product === 'object',
         )
           ? (values.related_products as EscolaLms.Cart.Models.Product[]).map(
-              (product) => product.id,
-            )
+            (product) => product.id,
+          )
           : values.related_products;
 
         const postData = {
           ...values,
           productables: currProductables
             ? getProductables(
-                currProductables as string[] | string | API.ProductableResourceListItem[],
-              )
+              currProductables as string[] | string | API.ProductableResourceListItem[],
+            )
             : undefined,
           ...(values.related_products ? { related_products } : {}),
           fields: {
@@ -481,11 +481,7 @@ const ProductsForm: React.FC<{
             />
 
             <ProFormDigit
-              rules={[
-                {
-                  validator: requiredValidator,
-                },
-              ]}
+
               width="xs"
               name="tax_rate"
               label={<FormattedMessage id="tax_rate" />}
@@ -494,7 +490,7 @@ const ProductsForm: React.FC<{
                 id: 'tax_rate',
                 defaultMessage: 'tax_rate',
               })}
-              initialValue={isNew ? 23 : undefined}
+              initialValue={isNew ? 0 : undefined}
               min={0}
               max={100}
               fieldProps={{
@@ -524,11 +520,11 @@ const ProductsForm: React.FC<{
                     value={
                       formRef.getFieldValue('price')
                         ? (
-                            Math.round(
-                              parseInt(formRef.getFieldValue('price')) *
-                                (1 + parseInt(formRef.getFieldValue('tax_rate')) / 100),
-                            ) / 100
-                          ).toFixed(2)
+                          Math.round(
+                            parseInt(formRef.getFieldValue('price')) *
+                            (1 + parseInt(formRef.getFieldValue('tax_rate')) / 100),
+                          ) / 100
+                        ).toFixed(2)
                         : undefined
                     }
                   />
@@ -557,11 +553,11 @@ const ProductsForm: React.FC<{
                     value={
                       formRef.getFieldValue('price')
                         ? (
-                            Math.round(
-                              parseInt(formRef.getFieldValue('price')) *
-                                (parseInt(formRef.getFieldValue('tax_rate')) / 100),
-                            ) / 100
-                          ).toFixed(2)
+                          Math.round(
+                            parseInt(formRef.getFieldValue('price')) *
+                            (parseInt(formRef.getFieldValue('tax_rate')) / 100),
+                          ) / 100
+                        ).toFixed(2)
                         : undefined
                     }
                   />
@@ -603,125 +599,125 @@ const ProductsForm: React.FC<{
           </ProForm.Group>
           {(productType === ProductTypes.SUBSCRIPTION ||
             productType === ProductTypes.SUBSCRIPTION_ALL_IN) && (
-            <>
-              <ProForm.Group title={<FormattedMessage id="subscription" />}>
-                <ProFormSelect
-                  name="subscription_period"
-                  tooltip={<FormattedMessage id="subscription_period_tooltip" />}
-                  label={intl.formatMessage({
-                    id: 'subscription_period',
-                    defaultMessage: 'Subscription period',
-                  })}
-                  options={[
-                    {
-                      label: intl.formatMessage({
-                        id: 'daily',
-                        defaultMessage: 'Daily',
-                      }),
-                      value: SubscriptionPeriod.DAILY,
-                    },
-                    {
-                      label: intl.formatMessage({
-                        id: 'monthly',
-                        defaultMessage: 'Monthly',
-                      }),
-                      value: SubscriptionPeriod.MONTHLY,
-                    },
-                    {
-                      label: intl.formatMessage({
-                        id: 'yearly',
-                        defaultMessage: 'Yearly',
-                      }),
-                      value: SubscriptionPeriod.YEARLY,
-                    },
-                  ]}
-                  placeholder={intl.formatMessage({
-                    id: 'select',
-                    defaultMessage: 'Select',
-                  })}
-                  rules={[{ required: true }]}
-                />
-                <ProFormDigit
-                  width="sm"
-                  name="subscription_duration"
-                  label={<FormattedMessage id="subscription_duration" />}
-                  tooltip={<FormattedMessage id="subscription_duration_tooltip" />}
-                  placeholder={intl.formatMessage({
-                    id: 'subscription_duration',
-                    defaultMessage: 'subscription_duration',
-                  })}
-                  min={1}
-                  max={99999}
-                  fieldProps={{ step: 1 }}
-                  rules={[{ required: true }]}
-                />
-                <ProFormSwitch
-                  name="recursive"
-                  label={<FormattedMessage id="recursive" />}
-                  tooltip={<FormattedMessage id="recursive_tooltip" />}
-                />
-              </ProForm.Group>
-              <ProForm.Group>
-                <ProFormSwitch
-                  name="has_trial"
-                  label={<FormattedMessage id="has_trial" />}
-                  tooltip={<FormattedMessage id="has_trial_tooltip" />}
-                />
-                <ProFormSelect
-                  name="trial_period"
-                  tooltip={<FormattedMessage id="trial_period_tooltip" />}
-                  label={intl.formatMessage({
-                    id: 'trial_period',
-                    defaultMessage: 'Trial period',
-                  })}
-                  options={[
-                    {
-                      label: intl.formatMessage({
-                        id: 'daily',
-                        defaultMessage: 'Daily',
-                      }),
-                      value: SubscriptionPeriod.DAILY,
-                    },
-                    {
-                      label: intl.formatMessage({
-                        id: 'monthly',
-                        defaultMessage: 'Monthly',
-                      }),
-                      value: SubscriptionPeriod.MONTHLY,
-                    },
-                    {
-                      label: intl.formatMessage({
-                        id: 'yearly',
-                        defaultMessage: 'Yearly',
-                      }),
-                      value: SubscriptionPeriod.YEARLY,
-                    },
-                  ]}
-                  placeholder={intl.formatMessage({
-                    id: 'select',
-                    defaultMessage: 'Select',
-                  })}
-                  rules={[{ required: hasTrial }]}
-                  disabled={!hasTrial}
-                />
-                <ProFormDigit
-                  width="sm"
-                  name="trial_duration"
-                  label={<FormattedMessage id="trial_duration" />}
-                  tooltip={<FormattedMessage id="trial_duration_tooltip" />}
-                  placeholder={intl.formatMessage({
-                    id: 'trial_duration',
-                    defaultMessage: 'trial_duration',
-                  })}
-                  min={1}
-                  max={99999}
-                  fieldProps={{ step: 1 }}
-                  rules={[{ required: hasTrial }]}
-                  disabled={!hasTrial}
-                />
-              </ProForm.Group>
-            </>
-          )}
+              <>
+                <ProForm.Group title={<FormattedMessage id="subscription" />}>
+                  <ProFormSelect
+                    name="subscription_period"
+                    tooltip={<FormattedMessage id="subscription_period_tooltip" />}
+                    label={intl.formatMessage({
+                      id: 'subscription_period',
+                      defaultMessage: 'Subscription period',
+                    })}
+                    options={[
+                      {
+                        label: intl.formatMessage({
+                          id: 'daily',
+                          defaultMessage: 'Daily',
+                        }),
+                        value: SubscriptionPeriod.DAILY,
+                      },
+                      {
+                        label: intl.formatMessage({
+                          id: 'monthly',
+                          defaultMessage: 'Monthly',
+                        }),
+                        value: SubscriptionPeriod.MONTHLY,
+                      },
+                      {
+                        label: intl.formatMessage({
+                          id: 'yearly',
+                          defaultMessage: 'Yearly',
+                        }),
+                        value: SubscriptionPeriod.YEARLY,
+                      },
+                    ]}
+                    placeholder={intl.formatMessage({
+                      id: 'select',
+                      defaultMessage: 'Select',
+                    })}
+                    rules={[{ required: true }]}
+                  />
+                  <ProFormDigit
+                    width="sm"
+                    name="subscription_duration"
+                    label={<FormattedMessage id="subscription_duration" />}
+                    tooltip={<FormattedMessage id="subscription_duration_tooltip" />}
+                    placeholder={intl.formatMessage({
+                      id: 'subscription_duration',
+                      defaultMessage: 'subscription_duration',
+                    })}
+                    min={1}
+                    max={99999}
+                    fieldProps={{ step: 1 }}
+                    rules={[{ required: true }]}
+                  />
+                  <ProFormSwitch
+                    name="recursive"
+                    label={<FormattedMessage id="recursive" />}
+                    tooltip={<FormattedMessage id="recursive_tooltip" />}
+                  />
+                </ProForm.Group>
+                <ProForm.Group>
+                  <ProFormSwitch
+                    name="has_trial"
+                    label={<FormattedMessage id="has_trial" />}
+                    tooltip={<FormattedMessage id="has_trial_tooltip" />}
+                  />
+                  <ProFormSelect
+                    name="trial_period"
+                    tooltip={<FormattedMessage id="trial_period_tooltip" />}
+                    label={intl.formatMessage({
+                      id: 'trial_period',
+                      defaultMessage: 'Trial period',
+                    })}
+                    options={[
+                      {
+                        label: intl.formatMessage({
+                          id: 'daily',
+                          defaultMessage: 'Daily',
+                        }),
+                        value: SubscriptionPeriod.DAILY,
+                      },
+                      {
+                        label: intl.formatMessage({
+                          id: 'monthly',
+                          defaultMessage: 'Monthly',
+                        }),
+                        value: SubscriptionPeriod.MONTHLY,
+                      },
+                      {
+                        label: intl.formatMessage({
+                          id: 'yearly',
+                          defaultMessage: 'Yearly',
+                        }),
+                        value: SubscriptionPeriod.YEARLY,
+                      },
+                    ]}
+                    placeholder={intl.formatMessage({
+                      id: 'select',
+                      defaultMessage: 'Select',
+                    })}
+                    rules={[{ required: hasTrial }]}
+                    disabled={!hasTrial}
+                  />
+                  <ProFormDigit
+                    width="sm"
+                    name="trial_duration"
+                    label={<FormattedMessage id="trial_duration" />}
+                    tooltip={<FormattedMessage id="trial_duration_tooltip" />}
+                    placeholder={intl.formatMessage({
+                      id: 'trial_duration',
+                      defaultMessage: 'trial_duration',
+                    })}
+                    min={1}
+                    max={99999}
+                    fieldProps={{ step: 1 }}
+                    rules={[{ required: hasTrial }]}
+                    disabled={!hasTrial}
+                  />
+                </ProForm.Group>
+              </>
+            )}
           <ProForm.Group title={<FormattedMessage id="additional_fields" />}>
             <ProFormText
               width="sm"
